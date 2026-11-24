@@ -30,8 +30,8 @@ function solarAt(point, now) {
  const angle=(solarHour-12)*15*Math.PI/180, lat=point[0]*Math.PI/180;
  return Math.sin(lat)*Math.sin(decl)+Math.cos(lat)*Math.cos(decl)*Math.cos(angle)>0;
 }
-function solarStatus(zone, now) {
- const point=coordinates[zone]; return point ? (solarAt(point,now) ? '☀ DAYTIME' : '☾ NIGHTTIME') : 'DAY / NIGHT UNAVAILABLE';
+function solarStatus(clock, now) {
+ const point=clock && clockPoint(clock); return point ? (solarAt(point,now) ? '☀ DAYTIME' : '☾ NIGHTTIME') : 'DAY / NIGHT UNAVAILABLE';
 }
 let daylightLayer;
 function updateDaylightLayer() {
@@ -48,8 +48,8 @@ function toggleDaylight() {
 }
 function savedOption(select, clocks, previous) {
  select.replaceChildren();
- clocks.forEach(c=>{const option=document.createElement('option'); option.value=c.timezone; option.textContent=c.name; select.append(option);});
- if (clocks.some(c=>c.timezone===previous)) select.value=previous;
+ clocks.forEach(c=>{const option=document.createElement('option'); option.value=clockId(c); option.textContent=c.name; select.append(option);});
+ if (clocks.some(c=>clockId(c)===previous)) select.value=previous;
 }
 function refreshToolCities() {
  ['meetingZone','convertFrom','convertTo','insightCity'].forEach(id=>{const select=document.getElementById(id); if (select) savedOption(select,activeClocks,select.value);});
@@ -59,7 +59,7 @@ function showText(id, text) { document.getElementById(id).textContent=text; }
 function row(parent, title, text) { const item=document.createElement('div'); item.className='result-row'; const strong=document.createElement('strong'); strong.textContent=title; const detail=document.createElement('span'); detail.textContent=text; item.append(strong,detail); parent.append(item); }
 function findMeetings() {
  const result=document.getElementById('meetingResults'); result.replaceChildren();
- const date=document.getElementById('meetingDate').value, zone=document.getElementById('meetingZone').value;
+ const date=document.getElementById('meetingDate').value, zone=activeClocks.find(c=>clockId(c)===document.getElementById('meetingZone').value)?.timezone;
  if (!zone || !date || !activeClocks.length) return showText('meetingResults','Add at least one location and choose a date.');
  const start=localToInstants(date+'T00:00',zone);
  if (start.length!==1) return showText('meetingResults','Midnight on this date is ambiguous or unavailable in the reference city. Choose another date.');
@@ -78,7 +78,7 @@ function findMeetings() {
  choices.slice(0,5).forEach((c,i)=>row(result,`#${i+1} · ${c.score}/${activeClocks.length} within hours`,c.local.map(({clock})=>`${clock.name}: ${formatAt(c.instant,clock.timezone)}`).join(' | ')));
 }
 function convertTime() {
- const value=document.getElementById('convertDate').value, from=document.getElementById('convertFrom').value, to=document.getElementById('convertTo').value, raw=document.getElementById('flightMinutes').value, duration=Number(raw);
+ const value=document.getElementById('convertDate').value, from=activeClocks.find(c=>clockId(c)===document.getElementById('convertFrom').value)?.timezone, to=activeClocks.find(c=>clockId(c)===document.getElementById('convertTo').value)?.timezone, raw=document.getElementById('flightMinutes').value, duration=Number(raw);
  if (!from || !to || !value || raw==='' || !Number.isInteger(duration) || duration<0 || duration>10080) return showText('convertResults','Choose locations, a date and time, and a duration from 0 to 10,080 minutes.');
  const instants=localToInstants(value,from);
  if (!instants.length) return showText('convertResults','This local time does not exist, likely because clocks move forward. Choose another time.');
@@ -92,8 +92,8 @@ async function fetchJSON(url) {
 function link(parent,label,url) { const a=document.createElement('a'); a.href=url; a.target='_blank'; a.rel='noopener noreferrer'; a.textContent=label+' ↗'; a.className='source-link'; parent.append(a); }
 let insightRequest=0;
 async function loadInsights() {
- const zone=document.getElementById('insightCity').value, clock=activeClocks.find(c=>c.timezone===zone), info=cityInfo[zone], point=coordinates[zone];
- if (!clock || !info || !point) { ['weatherResults','holidayResults','marketResults','resourceResults'].forEach(id=>showText(id,'Add a supported location to load insights.')); return; }
+ const clock=activeClocks.find(c=>clockId(c)===document.getElementById('insightCity').value), zone=clock?.timezone, info=clock?.id ? [clock.countryCode, null, clock.country] : cityInfo[zone], point=clock && clockPoint(clock);
+ if (!clock || !info || !point || !info[0] || !info[2]) { ['weatherResults','holidayResults','marketResults','resourceResults'].forEach(id=>showText(id,'Add a supported location to load insights.')); return; }
  const request=++insightRequest, ids=['weatherResults','holidayResults','marketResults','resourceResults']; ids.forEach(id=>showText(id,'Loading…'));
  const isCurrent=()=>request===insightRequest;
  const [lat,lon]=point, now=new Date(), local=zonedParts(now,zone), year=local.year;
@@ -120,8 +120,18 @@ async function loadInsights() {
  const markets=[['New York','America/New_York',9*60+30,16*60],['London','Europe/London',8*60,16*60+30],['Tokyo','Asia/Tokyo',9*60,15*60+30],['Sydney','Australia/Sydney',10*60,16*60]];
  markets.forEach(([name,tz,start,end])=>{const p=zonedParts(now,tz), min=p.hour*60+p.minute; let open=!['Sat','Sun'].includes(p.weekday)&&min>=start&&min<end; if(name==='Tokyo' && min>=11*60+30 && min<12*60+30) open=false; row(market,name,`${open?'Regular hours':'Outside regular hours'} · ${formatAt(now,tz)}`);});
  const note=document.createElement('p'); note.textContent='Indicative regular trading hours only; holidays, early closures and interruptions are not checked. Not trading advice.'; market.append(note);
- fetchJSON(`https://api.frankfurter.app/latest?from=USD&to=${encodeURIComponent(info[1])}`).then(data=>{if(!isCurrent())return; if(info[1]==='USD') return; if(data.rates && data.rates[info[1]]) row(market,`USD / ${info[1]}`,`${data.rates[info[1]]} · ${data.date}`);}).catch(()=>{if(isCurrent()&&info[1]!=='USD')row(market,'Exchange rate','Unavailable for this currency.');});
- if(info[1]==='USD') row(market,'Currency','USD · reference currency'); link(market,'Frankfurter exchange rates','https://www.frankfurter.app/');
+ async function loadRate() {
+  let currency=info[1];
+  if (!currency) {
+   try { const country=await fetchJSON(`https://restcountries.com/v3.1/alpha/${encodeURIComponent(info[0])}?fields=currencies`); currency=Object.keys(country.currencies || {})[0]; } catch (_) { /* no currency available */ }
+  }
+  if (!isCurrent()) return;
+  if (!currency) { row(market,'Exchange rate','Currency unavailable for this location.'); return; }
+  if(currency==='USD') { row(market,'Currency','USD · reference currency'); return; }
+  try { const data=await fetchJSON(`https://api.frankfurter.app/latest?from=USD&to=${encodeURIComponent(currency)}`); if(!isCurrent()) return; if(data.rates?.[currency]) row(market,`USD / ${currency}`,`${data.rates[currency]} · ${data.date}`); else row(market,'Exchange rate','Unavailable for this currency.'); }
+  catch (_) { if(isCurrent()) row(market,'Exchange rate','Unavailable for this currency.'); }
+ }
+ loadRate(); link(market,'Frankfurter exchange rates','https://www.frankfurter.app/');
  const resources=document.getElementById('resourceResults'); resources.replaceChildren();
  row(resources,info[2],`Local time: ${formatAt(now,zone)}`);
  const feed=document.createElement('div'); feed.id='regionalFeed'; resources.append(feed);

@@ -1,0 +1,16 @@
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const vm = require('node:vm');
+const context = { document: { addEventListener() {} }, Intl, Date, console };
+vm.createContext(context);
+vm.runInContext(fs.readFileSync('discovery.js', 'utf8'), context);
+const city = context.normalizeCity({id: 123, name: 'Smalltown', timezone: 'America/New_York', latitude: 40, longitude: -74, country_code: 'US', country: 'United States'});
+assert.equal(city.id, 'geo:123');
+assert.equal(city.timezone, 'America/New_York');
+assert.equal(context.normalizeCity({id: 1, name: 'Bad', timezone: 'Invalid/Zone', latitude: 1, longitude: 1, country_code: 'US', country: 'United States'}), null);
+assert.equal(context.normalizeCity({id: 1, name: 'Bad', timezone: 'UTC', latitude: 1000, longitude: 1, country_code: 'US', country: 'United States'}), null);
+const claim = (time, precision, rank='normal') => ({ rank, mainsnak: { snaktype:'value', datavalue:{value:{time, precision}} } });
+assert.equal(context.claimDate({claims:{P580:[claim('+2027-06-24T00:00:00Z',11)]}}, 'P580'), '2027-06-24');
+assert.equal(context.claimDate({claims:{P580:[claim('+2027-00-00T00:00:00Z',9)]}}, 'P580'), '2027');
+assert.equal(context.claimDate({claims:{P580:[claim('+2027-06-24T00:00:00Z',11,'deprecated')]}}, 'P580'), null);
+console.log('Discovery adapter tests passed.');
