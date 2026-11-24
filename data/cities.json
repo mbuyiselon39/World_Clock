@@ -1,0 +1,292 @@
+[
+  {
+    "slug": "new-york",
+    "name": "New York",
+    "zone": "America/New_York",
+    "lat": 40.71,
+    "lon": -74.01,
+    "countryCode": "US",
+    "currency": "USD",
+    "country": "United States"
+  },
+  {
+    "slug": "chicago",
+    "name": "Chicago",
+    "zone": "America/Chicago",
+    "lat": 41.88,
+    "lon": -87.63,
+    "countryCode": "US",
+    "currency": "USD",
+    "country": "United States"
+  },
+  {
+    "slug": "denver",
+    "name": "Denver",
+    "zone": "America/Denver",
+    "lat": 39.74,
+    "lon": -104.99,
+    "countryCode": "US",
+    "currency": "USD",
+    "country": "United States"
+  },
+  {
+    "slug": "los-angeles",
+    "name": "Los Angeles",
+    "zone": "America/Los_Angeles",
+    "lat": 34.05,
+    "lon": -118.24,
+    "countryCode": "US",
+    "currency": "USD",
+    "country": "United States"
+  },
+  {
+    "slug": "toronto",
+    "name": "Toronto",
+    "zone": "America/Toronto",
+    "lat": 43.65,
+    "lon": -79.38,
+    "countryCode": "CA",
+    "currency": "CAD",
+    "country": "Canada"
+  },
+  {
+    "slug": "vancouver",
+    "name": "Vancouver",
+    "zone": "America/Vancouver",
+    "lat": 49.28,
+    "lon": -123.12,
+    "countryCode": "CA",
+    "currency": "CAD",
+    "country": "Canada"
+  },
+  {
+    "slug": "mexico-city",
+    "name": "Mexico City",
+    "zone": "America/Mexico_City",
+    "lat": 19.43,
+    "lon": -99.13,
+    "countryCode": "MX",
+    "currency": "MXN",
+    "country": "Mexico"
+  },
+  {
+    "slug": "london",
+    "name": "London",
+    "zone": "Europe/London",
+    "lat": 51.51,
+    "lon": -0.13,
+    "countryCode": "GB",
+    "currency": "GBP",
+    "country": "United Kingdom"
+  },
+  {
+    "slug": "paris",
+    "name": "Paris",
+    "zone": "Europe/Paris",
+    "lat": 48.86,
+    "lon": 2.35,
+    "countryCode": "FR",
+    "currency": "EUR",
+    "country": "France"
+  },
+  {
+    "slug": "berlin",
+    "name": "Berlin",
+    "zone": "Europe/Berlin",
+    "lat": 52.52,
+    "lon": 13.4,
+    "countryCode": "DE",
+    "currency": "EUR",
+    "country": "Germany"
+  },
+  {
+    "slug": "rome",
+    "name": "Rome",
+    "zone": "Europe/Rome",
+    "lat": 41.9,
+    "lon": 12.5,
+    "countryCode": "IT",
+    "currency": "EUR",
+    "country": "Italy"
+  },
+  {
+    "slug": "madrid",
+    "name": "Madrid",
+    "zone": "Europe/Madrid",
+    "lat": 40.42,
+    "lon": -3.7,
+    "countryCode": "ES",
+    "currency": "EUR",
+    "country": "Spain"
+  },
+  {
+    "slug": "moscow",
+    "name": "Moscow",
+    "zone": "Europe/Moscow",
+    "lat": 55.76,
+    "lon": 37.62,
+    "countryCode": "RU",
+    "currency": "RUB",
+    "country": "Russia"
+  },
+  {
+    "slug": "tokyo",
+    "name": "Tokyo",
+    "zone": "Asia/Tokyo",
+    "lat": 35.69,
+    "lon": 139.69,
+    "countryCode": "JP",
+    "currency": "JPY",
+    "country": "Japan"
+  },
+  {
+    "slug": "shanghai",
+    "name": "Shanghai",
+    "zone": "Asia/Shanghai",
+    "lat": 31.23,
+    "lon": 121.47,
+    "countryCode": "CN",
+    "currency": "CNY",
+    "country": "China"
+  },
+  {
+    "slug": "hong-kong",
+    "name": "Hong Kong",
+    "zone": "Asia/Hong_Kong",
+    "lat": 22.32,
+    "lon": 114.17,
+    "countryCode": "HK",
+    "currency": "HKD",
+    "country": "Hong Kong"
+  },
+  {
+    "slug": "singapore",
+    "name": "Singapore",
+    "zone": "Asia/Singapore",
+    "lat": 1.35,
+    "lon": 103.82,
+    "countryCode": "SG",
+    "currency": "SGD",
+    "country": "Singapore"
+  },
+  {
+    "slug": "dubai",
+    "name": "Dubai",
+    "zone": "Asia/Dubai",
+    "lat": 25.2,
+    "lon": 55.27,
+    "countryCode": "AE",
+    "currency": "AED",
+    "country": "United Arab Emirates"
+  },
+  {
+    "slug": "mumbai",
+    "name": "Mumbai",
+    "zone": "Asia/Kolkata",
+    "lat": 19.08,
+    "lon": 72.88,
+    "countryCode": "IN",
+    "currency": "INR",
+    "country": "India"
+  },
+  {
+    "slug": "seoul",
+    "name": "Seoul",
+    "zone": "Asia/Seoul",
+    "lat": 37.57,
+    "lon": 126.98,
+    "countryCode": "KR",
+    "currency": "KRW",
+    "country": "South Korea"
+  },
+  {
+    "slug": "sydney",
+    "name": "Sydney",
+    "zone": "Australia/Sydney",
+    "lat": -33.87,
+    "lon": 151.21,
+    "countryCode": "AU",
+    "currency": "AUD",
+    "country": "Australia"
+  },
+  {
+    "slug": "melbourne",
+    "name": "Melbourne",
+    "zone": "Australia/Melbourne",
+    "lat": -37.81,
+    "lon": 144.96,
+    "countryCode": "AU",
+    "currency": "AUD",
+    "country": "Australia"
+  },
+  {
+    "slug": "auckland",
+    "name": "Auckland",
+    "zone": "Pacific/Auckland",
+    "lat": -36.85,
+    "lon": 174.76,
+    "countryCode": "NZ",
+    "currency": "NZD",
+    "country": "New Zealand"
+  },
+  {
+    "slug": "sao-paulo",
+    "name": "São Paulo",
+    "zone": "America/Sao_Paulo",
+    "lat": -23.55,
+    "lon": -46.63,
+    "countryCode": "BR",
+    "currency": "BRL",
+    "country": "Brazil"
+  },
+  {
+    "slug": "buenos-aires",
+    "name": "Buenos Aires",
+    "zone": "America/Buenos_Aires",
+    "lat": -34.6,
+    "lon": -58.38,
+    "countryCode": "AR",
+    "currency": "ARS",
+    "country": "Argentina"
+  },
+  {
+    "slug": "santiago",
+    "name": "Santiago",
+    "zone": "America/Santiago",
+    "lat": -33.45,
+    "lon": -70.67,
+    "countryCode": "CL",
+    "currency": "CLP",
+    "country": "Chile"
+  },
+  {
+    "slug": "cairo",
+    "name": "Cairo",
+    "zone": "Africa/Cairo",
+    "lat": 30.04,
+    "lon": 31.24,
+    "countryCode": "EG",
+    "currency": "EGP",
+    "country": "Egypt"
+  },
+  {
+    "slug": "johannesburg",
+    "name": "Johannesburg",
+    "zone": "Africa/Johannesburg",
+    "lat": -26.2,
+    "lon": 28.05,
+    "countryCode": "ZA",
+    "currency": "ZAR",
+    "country": "South Africa"
+  },
+  {
+    "slug": "lagos",
+    "name": "Lagos",
+    "zone": "Africa/Lagos",
+    "lat": 6.52,
+    "lon": 3.38,
+    "countryCode": "NG",
+    "currency": "NGN",
+    "country": "Nigeria"
+  }
+]

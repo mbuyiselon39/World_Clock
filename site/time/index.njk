@@ -1,0 +1,7 @@
+---
+layout: base.njk
+permalink: /time/index.html
+title: World time by city
+description: Browse live city clocks and time zones around the world on WorldScope.
+---
+<div class="eyebrow">WORLD TIME / CITY DIRECTORY</div><h1>World time by city</h1><p class="lead">Explore our growing collection of city clocks or search thousands of locations in the dashboard.</p><div class="grid">{% for city in catalog.cities %}<article class="card"><h3><a href="/time/{{ city.slug }}/">{{ city.name }}</a></h3><p>{{ city.country }} · {{ city.zone }}</p></article>{% endfor %}</div><p><a class="button" href="/#add-clock">Search more cities ↗</a></p>

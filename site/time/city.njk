@@ -1,0 +1,14 @@
+---
+pagination:
+  data: catalog.cities
+  size: 1
+  alias: city
+permalink: "/time/{{ city.slug }}/index.html"
+layout: base.njk
+eleventyComputed:
+  title: "Time in {{ city.name }}, {{ city.country }}"
+  description: "See the current time in {{ city.name }}, {{ city.country }}, explore its IANA time zone and plan meetings across locations."
+---
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Place","name":{{ city.name | json | safe }},"geo":{"@type":"GeoCoordinates","latitude":{{ city.lat }},"longitude":{{ city.lon }}},"address":{"@type":"PostalAddress","addressCountry":{{ city.countryCode | json | safe }}}}</script>
+<div class="eyebrow">WORLD TIME / {{ city.country }}</div><h1>Time in {{ city.name }}</h1><p class="lead">Follow the current local time in {{ city.name }}, {{ city.country }}, and plan across time zones.</p><section class="card" data-zone="{{ city.zone }}"><h2>Local time now</h2><div class="big-time" id="cityTime">Enable JavaScript to see the live time</div><p id="cityDate" class="muted"></p><p id="cityOffset" class="muted">Time zone: {{ city.zone }}</p><p id="nextChange" class="notice">Next offset change: enable JavaScript to check.</p><p class="notice">Live time uses your device clock and browser time-zone database. Rules can change.</p></section><h2>Time zone details</h2><dl><dt>IANA time zone</dt><dd>{{ city.zone }}</dd><dt>Country or territory</dt><dd><a href="/country/{{ city.country | slug }}/">{{ city.country }}</a></dd><dt>Approximate coordinates</dt><dd>{{ city.lat }}, {{ city.lon }}</dd></dl><h2>Plan a call with {{ city.name }}</h2><p>Business hours are often 09:00–17:00 on weekdays, but individual schedules and public holidays vary. Add {{ city.name }} and the people you are meeting to the dashboard to compare times for a specific date. The meeting finder accounts for each location’s local time.</p><p><a class="button" href="/#planning">Open meeting planner ↗</a></p><h2>Frequently asked questions</h2><h3>Does {{ city.name }} change clocks for daylight saving time?</h3><p>Rules vary by location and year. The live clock uses the IANA time-zone rules available in your browser, including changes where applicable. Check local authorities for future changes.</p><h3>How do I convert a time in {{ city.name }}?</h3><p>Choose the departure and destination cities in the <a href="/#planning">time zone converter</a>, enter a local date and time, and calculate. The tool flags repeated or nonexistent times during clock changes.</p><p class="notice">Coordinates are approximate. Seed locations originate from the existing WorldScope city selector. Time-zone calculations use the browser’s Intl implementation.</p>
+<script defer src="/assets/time-core.js"></script><script defer src="/assets/city-clock.js"></script>

@@ -1,0 +1,12 @@
+---
+pagination:
+  data: catalog.countries
+  size: 1
+  alias: country
+permalink: "/country/{{ country.slug }}/index.html"
+layout: base.njk
+eleventyComputed:
+  title: "{{ country.name }} time zones and city clocks"
+  description: "Explore city clocks and time-zone planning for {{ country.name }}, including local currency and selected locations."
+---
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Country","name":{{ country.name | json | safe }}}</script><div class="eyebrow">COUNTRY / {{ country.code }}</div><h1>{{ country.name }}: time and travel</h1><p class="lead">Explore local times and plan a conversation across borders with selected locations in {{ country.name }}.</p><h2>At a glance</h2><dl><dt>Country code</dt><dd>{{ country.code }}</dd><dt>Currency</dt><dd>{{ country.currency }} (verify exchange information before use)</dd>{% if country.facts %}<dt>Capital</dt><dd>{{ country.facts.capitals | join(", ") or "Not available" }}</dd><dt>Languages</dt><dd>{{ country.facts.languages | join(", ") or "Not available" }}</dd><dt>Calling code</dt><dd>{{ country.facts.callingCode or "Not available" }}</dd><dt>Driving side</dt><dd>{{ country.facts.drivingSide or "Not available" }}</dd>{% endif %}<dt>Selected time zones</dt><dd>{% for city in country.cities %}{{ city.zone }}{% if not loop.last %}, {% endif %}{% endfor %}</dd></dl>{% if country.facts %}<p class="notice">Country facts: REST Countries snapshot retrieved {{ country.retrievedAt }}. Confirm with official sources.</p>{% endif %}<h2>City clocks in {{ country.name }}</h2><div class="grid">{% for city in country.cities %}<article class="card"><h3><a href="/time/{{ city.slug }}/">{{ city.name }}</a></h3><p>{{ city.zone }}</p></article>{% endfor %}</div><p class="notice">This curated list is not a complete list of cities or time zones. Search for more locations in the dashboard. Currency and country information are inherited from the existing WorldScope location directory; verify details with official sources.</p><p><a class="button" href="/#atlas">Explore the world atlas ↗</a></p>
