@@ -12,6 +12,8 @@ const coordinates = {
     'Asia/Tokyo':[35.69,139.69], 'Asia/Shanghai':[31.23,121.47], 'Asia/Hong_Kong':[22.32,114.17], 'Asia/Singapore':[1.35,103.82], 'Asia/Dubai':[25.2,55.27], 'Asia/Kolkata':[19.08,72.88], 'Asia/Seoul':[37.57,126.98],
     'Australia/Sydney':[-33.87,151.21], 'Australia/Melbourne':[-37.81,144.96], 'Pacific/Auckland':[-36.85,174.76], 'America/Sao_Paulo':[-23.55,-46.63], 'America/Buenos_Aires':[-34.6,-58.38], 'America/Santiago':[-33.45,-70.67], 'Africa/Cairo':[30.04,31.24], 'Africa/Johannesburg':[-26.2,28.05], 'Africa/Lagos':[6.52,3.38]
 };
+function clockId(clock) { return clock.id || 'tz:' + clock.timezone; }
+function clockPoint(clock) { return Array.isArray(clock.coordinates) && clock.coordinates.length === 2 && clock.coordinates.every(Number.isFinite) && Math.abs(clock.coordinates[0]) <= 90 && Math.abs(clock.coordinates[1]) <= 180 ? clock.coordinates : (!clock.id ? coordinates[clock.timezone] : null); }
 function savePreferences() {
     try {
         localStorage.setItem('activeClocks', JSON.stringify(activeClocks));
@@ -48,6 +50,7 @@ function createClockElement(clock, index) {
     const card = document.createElement('article');
     card.className = 'clock';
     card.dataset.timezone = clock.timezone;
+    card.dataset.clockId = clockId(clock);
     card.innerHTML = `<div class="card-top"><span class="card-number">LOCATION / ${String(index + 1).padStart(2, '0')}</span><div class="clock-actions"><button class="btn-icon favorite" type="button"><i></i></button><button class="btn-icon remove" type="button"><i class="fas fa-times"></i></button></div></div><div class="city"></div><div class="timezone"></div><div class="clock-middle"><div><div class="time"></div><div class="date"></div></div><div class="analog-clock" aria-hidden="true"><div class="dial-inner"></div><div class="hour-hand"></div><div class="minute-hand"></div><div class="second-hand"></div><div class="clock-center"></div></div></div><div class="clock-footer"><span class="time-difference"></span><span class="day-status card-live">LIVE</span></div>`;
     card.querySelector('.city').textContent = clock.name;
     card.querySelector('.timezone').textContent = clock.timezone.replaceAll('_', ' ');
@@ -81,7 +84,7 @@ function updateClocks() {
         card.querySelector('.time').textContent = `${p.hour}:${p.minute}:${p.second}`;
         card.querySelector('.date').textContent = new Intl.DateTimeFormat('en-US', {timeZone:tz, weekday:'long', month:'short', day:'numeric'}).format(now);
         card.querySelector('.time-difference').textContent = timeDifference(tz, now);
-        if (typeof solarStatus === 'function') card.querySelector('.day-status').textContent = solarStatus(tz, now);
+        if (typeof solarStatus === 'function') card.querySelector('.day-status').textContent = solarStatus(activeClocks.find(clock => clockId(clock) === card.dataset.clockId), now);
         card.querySelector('.hour-hand').style.transform = `rotate(${(+p.hour % 12) * 30 + +p.minute * .5}deg)`;
         card.querySelector('.minute-hand').style.transform = `rotate(${+p.minute * 6}deg)`;
         card.querySelector('.second-hand').style.transform = `rotate(${+p.second * 6}deg)`;
@@ -93,11 +96,12 @@ function updateMapMarkers() {
     map.markers.forEach(marker => marker.remove());
     map.markers = [];
     activeClocks.forEach(clock => {
-        if (!coordinates[clock.timezone]) return;
+        const point = clockPoint(clock);
+        if (!point) return;
         const popup = document.createElement('div');
         const name = document.createElement('strong'); name.textContent = clock.name;
         popup.append(name, document.createElement('br'), document.createTextNode(clock.timezone));
-        map.markers.push(L.marker(coordinates[clock.timezone]).addTo(map).bindPopup(popup));
+        map.markers.push(L.marker(point).addTo(map).bindPopup(popup));
     });
 }
 function initializeMap() {
