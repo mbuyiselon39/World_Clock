@@ -3,11 +3,12 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "build": "node scripts/clean.js && eleventy && node scripts/validate-build.js",
-    "test": "node tests/planning.test.js && node tests/discovery.test.js && node tests/dashboard.test.js && node tests/atlas.test.js && node tests/static.test.js",
+    "build": "node scripts/clean.js && eleventy && node scripts/validate-build.js && node scripts/audit-static.js",
+    "test": "node tests/planning.test.js && node tests/discovery.test.js && node tests/dashboard.test.js && node tests/atlas.test.js && node tests/static.test.js && node tests/integration.test.js",
     "refresh:data": "node scripts/update-countries.js"
   },
   "devDependencies": {
-    "@11ty/eleventy": "^3.1.2"
+    "@11ty/eleventy": "^3.1.2",
+    "jsdom": "^26.1.0"
   }
 }

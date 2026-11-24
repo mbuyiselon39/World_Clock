@@ -1,4 +1,4 @@
-/* REST Countries directory adapter. API records are treated as data, never HTML. */
+/* Bundled country directory adapter. Records are treated as data, never HTML. */
 const ATLAS_PAGE_SIZE=12;
 let atlasCountries=[], atlasPage=0, atlasRequest=0;
 function atlasRegionOf(record) {
@@ -10,7 +10,7 @@ function normalizeCountry(record) {
  if (!record || typeof record.name?.common!=='string' || !/^[A-Z]{2}$/.test(record.cca2 || '')) return null;
  const str = v => typeof v==='string' ? v : '';
  const strings = v => Array.isArray(v) ? v.filter(x=>typeof x==='string') : [];
- return {code:record.cca2, name:record.name.common, official:str(record.name.official), region:atlasRegionOf(record), subregion:str(record.subregion), capitals:strings(record.capital), population:Number.isFinite(record.population)&&record.population>=0 ? record.population : null, area:Number.isFinite(record.area)&&record.area>=0 ? record.area : null, languages:record.languages && typeof record.languages==='object' ? Object.values(record.languages).filter(x=>typeof x==='string') : [], flag:str(record.flags?.png), crest:str(record.coatOfArms?.png)};
+ return {code:record.cca2, name:record.name.common, official:str(record.name.official), region:atlasRegionOf(record), subregion:str(record.subregion), capitals:strings(record.capital), population:Number.isFinite(record.population)&&record.population>=0 ? record.population : null, area:Number.isFinite(record.area)&&record.area>=0 ? record.area : null, languages:record.languages && typeof record.languages==='object' ? Object.values(record.languages).filter(x=>typeof x==='string') : [], flag:str(record.flags?.png), flagEmoji:str(record.flag), crest:str(record.coatOfArms?.png)};
 }
 function countryFilter(records, query, region) {
  const q=query.trim().toLocaleLowerCase();
@@ -22,7 +22,7 @@ function countryCard(country) {
  const card=document.createElement('article'); card.className='atlas-card';
  const head=document.createElement('div'); head.className='atlas-card-head';
  const flag=safeImage(country.flag);
- if(flag) {const img=document.createElement('img'); img.src=flag; img.alt=`Flag of ${country.name}`; img.loading='lazy'; img.className='atlas-flag'; head.append(img);}
+ if(flag) {const img=document.createElement('img'); img.src=flag; img.alt=`Flag of ${country.name}`; img.loading='lazy'; img.className='atlas-flag'; head.append(img);} else if (country.flagEmoji) { const emoji=atlasText('span',country.flagEmoji,'atlas-flag-emoji'); emoji.setAttribute('role','img'); emoji.setAttribute('aria-label',`Flag of ${country.name}`); head.append(emoji); }
  const title=atlasText('h3',country.name); head.append(title); card.append(head);
  const lines=[['Region',country.subregion || country.region],['Capital',country.capitals.join(', ') || 'Not available'],['Population',country.population===null ? 'Not available' : new Intl.NumberFormat().format(country.population)],['Area',country.area===null ? 'Not available' : `${new Intl.NumberFormat().format(country.area)} km²`],['Languages',country.languages.join(', ') || 'Not available']];
  lines.forEach(([name,value])=>row(card,name,value));
@@ -46,9 +46,9 @@ function renderAtlas() {
  document.getElementById('atlasPrev').disabled=atlasPage===0; document.getElementById('atlasNext').disabled=atlasPage>=pages-1;
 }
 async function loadAtlas() {
- const generation=++atlasRequest, status=document.getElementById('atlasStatus'); status.textContent='Loading country directory from REST Countries…';
+ const generation=++atlasRequest, status=document.getElementById('atlasStatus'); status.textContent='Loading the bundled country directory…';
  try {
-  const data=await fetchJSON('https://restcountries.com/v3.1/all?fields=name,cca2,region,subregion,capital,population,area,flags,coatOfArms,languages');
+  const snapshot=await fetchJSON('/data/countries.json'); const data=snapshot.countries;
   if(generation!==atlasRequest) return;
   if(!Array.isArray(data)) throw new Error('Invalid response');
   const seen=new Set(), records=data.map(normalizeCountry).filter(c=>{if(!c||seen.has(c.code))return false;seen.add(c.code);return true;}).sort((a,b)=>a.name.localeCompare(b.name));
@@ -56,7 +56,7 @@ async function loadAtlas() {
   atlasCountries=records; atlasPage=0; document.getElementById('reloadAtlas').textContent='Refresh countries';
   const filter=document.getElementById('cityCountryFilter'), previous=filter.value; filter.replaceChildren(new Option('All countries',''));
   atlasCountries.forEach(c=>filter.add(new Option(c.name,c.code))); if(atlasCountries.some(c=>c.code===previous)) filter.value=previous;
-  status.textContent=`${atlasCountries.length} countries and territories · retrieved ${new Date().toLocaleString()}. Population is a provider estimate; year may vary.`;
+  status.textContent=`${atlasCountries.length} countries and territories · snapshot retrieved ${snapshot.retrievedAt ? new Date(snapshot.retrievedAt).toLocaleDateString() : 'date unavailable'}. Population and coat of arms are not included in this dataset.`;
   renderAtlas();
  } catch (_) { if(generation===atlasRequest) {status.textContent=atlasCountries.length ? 'Refresh failed. Showing previously loaded country data; try again.' : 'Country directory unavailable. Check your connection and try Refresh countries.'; renderAtlas();} }
 }

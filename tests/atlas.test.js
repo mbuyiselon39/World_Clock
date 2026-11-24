@@ -11,4 +11,7 @@ assert.equal(ctx.countryFilter([south],'brasília','South America').length,1);
 assert.equal(ctx.countryFilter([south],'brazil','Europe').length,0);
 assert.equal(ctx.safeImage('javascript:alert(1)'),'');
 assert.equal(ctx.safeImage('http://example.com/flag.png'),'');
+const snapshot=JSON.parse(fs.readFileSync('data/countries.json','utf8'));
+assert.ok(snapshot.countries.length>=200);assert.ok(snapshot.revision);assert.ok(snapshot.countries.some(c=>c.cca2==='ZA' && c.currencies.ZAR));
+assert.ok(snapshot.countries.every(c=>ctx.normalizeCountry(c)));
 console.log('Atlas adapter tests passed.');

@@ -21,14 +21,16 @@ function savePreferences() {
     } catch (_) { /* The dashboard still works when storage is unavailable. */ }
 }
 function loadPreferences() {
+    // Storage can be disabled or malformed; keep default clocks and dark theme usable.
+    document.body.classList.add('dark-theme');
     try {
         const saved = JSON.parse(localStorage.getItem('activeClocks'));
         if (Array.isArray(saved)) activeClocks = saved.filter(c => {
             if (!c || typeof c.name !== 'string' || typeof c.timezone !== 'string') return false;
             try { new Intl.DateTimeFormat('en', { timeZone: c.timezone }); return true; } catch (_) { return false; }
         });
-        if (localStorage.getItem('theme') !== 'false') document.body.classList.add('dark-theme');
-    } catch (_) { /* Ignore corrupt or inaccessible saved preferences. */ }
+    } catch (_) { /* Ignore corrupt or inaccessible saved clocks. */ }
+    try { if (localStorage.getItem('theme') === 'false') document.body.classList.remove('dark-theme'); } catch (_) { /* Keep default theme. */ }
     updateThemeButton();
 }
 function updateThemeButton() {
@@ -110,10 +112,11 @@ function updateMapMarkers() {
 function initializeMap() {
     if (typeof L === 'undefined') { document.getElementById('mapFallback').hidden = false; return; }
     try {
-        map = L.map('world-map', {scrollWheelZoom:false}).setView([20, 0], 2);
+        map = L.map('world-map', {scrollWheelZoom:false});
+        map.setView([20, 0], 2);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors', maxZoom:19 }).addTo(map);
         map.markers = []; updateMapMarkers();
-    } catch (_) { map = null; document.getElementById('mapFallback').hidden = false; }
+    } catch (_) { if (map) { try { map.remove(); } catch (_) {} } map = null; document.getElementById('mapFallback').hidden = false; }
 }
 function loadMapWhenVisible() {
     const button=document.getElementById('loadMap');
@@ -121,7 +124,7 @@ function loadMapWhenVisible() {
         button.disabled=true; button.textContent='Loading map…';
         const css=document.createElement('link'); css.rel='stylesheet'; css.href='https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'; document.head.append(css);
         const script=document.createElement('script'); script.src='https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
-        script.onload=()=>{initializeMap(); if(map) {document.getElementById('daylightToggle').disabled=false; button.textContent='Map loaded';} else {button.disabled=false;button.textContent='Retry map';}};
+        script.onload=()=>{initializeMap(); if(map) {document.getElementById('mapFallback').hidden=true; document.getElementById('daylightToggle').disabled=false; button.textContent='Map loaded';} else {button.disabled=false;button.textContent='Retry map';}};
         script.onerror=()=>{document.getElementById('mapFallback').hidden=false;button.disabled=false;button.textContent='Retry map';}; document.head.append(script);
     });
 }
@@ -131,7 +134,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('addClockBtn').addEventListener('click', () => {
         const select = document.getElementById('timezoneSelect'), input = document.getElementById('customName'), message = document.getElementById('formMessage');
         if (!select.value) { message.textContent = 'Please choose a city or time zone.'; select.focus(); return; }
-        if (activeClocks.some(c => c.timezone === select.value)) { message.textContent = 'This time zone is already on your dashboard.'; return; }
+        if (activeClocks.some(c => clockId(c) === 'tz:' + select.value)) { message.textContent = 'This location is already on your dashboard.'; return; }
         activeClocks.push({timezone:select.value, name:input.value.trim() || select.selectedOptions[0].textContent});
         select.value = ''; input.value = ''; message.textContent = 'Location added to your dashboard.';
         renderClocks(); updateMapMarkers(); savePreferences();
