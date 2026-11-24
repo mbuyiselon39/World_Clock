@@ -1,0 +1,15 @@
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const vm = require('node:vm');
+const context={document:{addEventListener(){}},Intl,console};
+vm.createContext(context); vm.runInContext(fs.readFileSync('dashboard.js','utf8'),context);
+const normalize = context.normalizeBackup;
+const good={version:1,clocks:[{name:'London',timezone:'Europe/London',favorite:true},{id:'geo:123',name:'Other',timezone:'Europe/London',coordinates:[51,-0.1],countryCode:'GB',country:'United Kingdom'}]};
+assert.equal(normalize(good).length,2);
+assert.equal(normalize({version:1,clocks:[]}).length,0);
+assert.throws(()=>normalize({version:2,clocks:[]}));
+assert.throws(()=>normalize({version:1,clocks:[{name:'Bad',timezone:'Invalid/Zone'}]}));
+assert.throws(()=>normalize({version:1,clocks:[{name:'One',timezone:'UTC'},{name:'Two',timezone:'UTC'}]}));
+assert.throws(()=>normalize({version:1,clocks:[{...good.clocks[1],coordinates:[999,0]}]}));
+assert.throws(()=>normalize({version:1,clocks:new Array(101).fill(good.clocks[0])}));
+console.log('Dashboard backup tests passed.');

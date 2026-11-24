@@ -81,7 +81,10 @@ function updateClocks() {
         const tz = card.dataset.timezone;
         const parts = new Intl.DateTimeFormat('en-US', {timeZone:tz, hour:'2-digit', minute:'2-digit', second:'2-digit', hourCycle:'h23'}).formatToParts(now);
         const p = Object.fromEntries(parts.map(part => [part.type, part.value]));
-        card.querySelector('.time').textContent = `${p.hour}:${p.minute}:${p.second}`;
+        card.querySelector('.time').classList.toggle('format-12', typeof getClockFormat === 'function' && getClockFormat() === '12');
+        card.querySelector('.time').textContent = typeof getClockFormat === 'function' && getClockFormat() === '12'
+            ? `${String((+p.hour % 12) || 12).padStart(2, '0')}:${p.minute}:${p.second} ${+p.hour < 12 ? 'AM' : 'PM'}`
+            : `${p.hour}:${p.minute}:${p.second}`;
         card.querySelector('.date').textContent = new Intl.DateTimeFormat('en-US', {timeZone:tz, weekday:'long', month:'short', day:'numeric'}).format(now);
         card.querySelector('.time-difference').textContent = timeDifference(tz, now);
         if (typeof solarStatus === 'function') card.querySelector('.day-status').textContent = solarStatus(activeClocks.find(clock => clockId(clock) === card.dataset.clockId), now);

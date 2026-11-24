@@ -48,3 +48,11 @@ Tests: `node tests/planning.test.js` and `node tests/discovery.test.js`. City se
 This repository is a static site: there is no application backend or server-side domain configuration to update. To complete the move, configure DNS and HTTPS for `worldscope.calculatorflash.com` in your hosting provider, publish the site there, and configure a permanent redirect from `worldclock.calculatorflash.com` to the corresponding URL on the new host. Verify the new origin before enabling redirects and submit its sitemap to search engines. These hosting and DNS changes are not performed by the repository.
 
 Browser storage is scoped to an origin. Existing clocks and theme preferences on `worldclock.calculatorflash.com` will not automatically transfer to `worldscope.calculatorflash.com`; users will need to recreate them unless a separate, consent-based migration mechanism is deployed. No storage keys or third-party API endpoints were changed by the rebrand.
+
+## Dashboard preferences and backups
+
+Use the dashboard's 12/24-hour selector to change the digital clock format. This preference is stored on the current origin when browser storage is available. Export creates a local JSON backup of saved clocks, labels, favorites and searched-city metadata. Import validates the file and asks for confirmation before replacing the current clock list; it does not change the theme or time format. Backups can contain personal labels and locations, so share them carefully. No backup data is sent to WorldScope or any server. A backup can also be exported on the old origin and imported on the new one if both deployments include this feature.
+
+The fixed navigation adapts its offset to the actual header height. The static, visible time-zone guide and WebSite/WebApplication metadata help crawlers understand the page; `social-card.png` is used for social previews. Publish the complete repository including `dashboard.js` and `social-card.png`. Confirm DNS and redirects, test production pages and robots rules with search-engine tools, and submit the sitemap after deployment. Search indexing, social previews, and AI citations depend on third-party systems and cannot be guaranteed by markup alone.
+
+Run `node tests/dashboard.test.js` to check backup validation, in addition to the planning and discovery tests.
