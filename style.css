@@ -21,3 +21,14 @@ body.dark-theme{color-scheme:dark;--bg:#080e1b;--surface:#0d1726;--surface2:#101
 .topbar{position:sticky;top:0;z-index:1000;background:var(--bg);box-shadow:0 8px 20px rgba(0,0,0,.08)}
 html{scroll-padding-top:100px}
 @media(max-width:1000px){html{scroll-padding-top:155px}}
+/* Fixed navigation remains visible across the entire document. */
+:root{--header-height:88px}
+.topbar{position:fixed;left:0;right:0;top:0;width:100%;z-index:1000;padding-left:max(6.2vw, calc((100vw - 1261px)/2));padding-right:max(6.2vw, calc((100vw - 1261px)/2))}
+.site-shell main{padding-top:var(--header-height)}
+html{scroll-padding-top:calc(var(--header-height) + 12px)}
+.skip-link{position:fixed;top:-100px;left:12px;z-index:2000;background:var(--surface);color:var(--text);padding:12px;border:2px solid var(--accent);border-radius:6px}.skip-link:focus{top:8px}
+.dashboard-controls{margin-top:16px;padding:18px;background:var(--surface);border:1px solid var(--border);border-radius:12px;display:flex;align-items:end;gap:12px;flex-wrap:wrap}.dashboard-controls>div:first-child{width:130px}.dashboard-controls p{margin:0 0 3px;color:var(--muted);font-size:11px;line-height:1.5;flex:1;min-width:200px}.dashboard-controls #backupStatus:not(:empty){flex-basis:100%;color:var(--accent)}.backup-controls{display:flex;gap:8px;align-items:center}.backup-controls button,.import-label{background:var(--surface2);color:var(--text);font-size:11px;font-weight:700;cursor:pointer;margin:0}.backup-controls input{position:absolute;width:1px;height:1px;opacity:0;overflow:hidden}.backup-controls input:focus-visible + *,.import-label:focus-within{outline:2px solid var(--accent)}.guide-section{padding-top:70px}.guide-section h2{font:700 27px 'Space Grotesk',sans-serif;letter-spacing:-1px}.guide-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.guide-grid article{padding:20px;background:var(--surface);border:1px solid var(--border);border-radius:12px}.guide-grid h3{font:700 16px 'Space Grotesk',sans-serif;margin:0 0 10px}.guide-grid p{font-size:12px;line-height:1.7;color:var(--muted);margin:0}
+@media(max-width:1000px){:root{--header-height:145px}.topbar{padding-left:6.2%;padding-right:6.2%}}
+@media(max-width:650px){:root{--header-height:135px}.topbar{padding-left:5%;padding-right:5%}.guide-grid{grid-template-columns:1fr}.dashboard-controls p{flex-basis:100%}}
+.backup-controls:focus-within .import-label{outline:2px solid var(--accent);outline-offset:3px}
+.clock-middle{flex-wrap:wrap}.time.format-12{font-size:clamp(15px,1.6vw,22px)}
