@@ -17,3 +17,7 @@ body.dark-theme{color-scheme:dark;--bg:#080e1b;--surface:#0d1726;--surface2:#101
 @media(max-width:1100px){.topbar nav{gap:14px}.topbar nav a{font-size:11px}.sports-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:650px){.topbar{height:auto;min-height:72px;flex-wrap:wrap;padding:15px 0;gap:12px}.topbar nav{display:flex;order:3;width:100%;overflow-x:auto;white-space:nowrap;padding:5px 0 3px;gap:22px}.header-right{margin-left:auto}.city-search select{max-width:none;margin:0 0 10px}.city-search-controls .outline-link{padding:10px}.sports-controls{align-items:flex-start;flex-direction:column}.sports-controls .btn{width:auto}.sports-grid{grid-template-columns:1fr}}
 @media(min-width:651px) and (max-width:1000px){.topbar{height:auto;min-height:88px;flex-wrap:wrap;padding:15px 0;gap:12px}.topbar nav{order:3;width:100%;overflow-x:auto;white-space:nowrap;padding:5px 0}.header-right{margin-left:auto}}
+/* Keep navigation available while scrolling, including above the map controls. */
+.topbar{position:sticky;top:0;z-index:1000;background:var(--bg);box-shadow:0 8px 20px rgba(0,0,0,.08)}
+html{scroll-padding-top:100px}
+@media(max-width:1000px){html{scroll-padding-top:155px}}

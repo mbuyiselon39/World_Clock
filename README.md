@@ -1,6 +1,6 @@
-# World Clock
+# WorldScope
 
-A responsive world-clock dashboard for comparing local times across cities. The site is intended to be hosted at **https://worldclock.calculatorflash.com/**.
+WorldScope combines world clocks, travel and meeting planning, and location insights in a responsive dashboard. The site is intended to be hosted at **https://worldscope.calculatorflash.com/**.
 
 ## Features
 
@@ -21,7 +21,7 @@ Visit `http://localhost:8000/`. The map, map tiles, fonts, and icons require int
 
 ## Deployment and SEO
 
-Publish the repository root to the subdomain over HTTPS, ensuring `index.html`, `style.css`, `script.js`, `favicon.svg`, `robots.txt`, and `sitemap.xml` are served at the domain root. The canonical URL, Open Graph URL, and sitemap are configured for `https://worldclock.calculatorflash.com/`; update them if the deployment address changes. Submit the sitemap to search engines after deployment. Search indexing and ranking are not guaranteed.
+Publish the repository root to the subdomain over HTTPS, ensuring `index.html`, `style.css`, `script.js`, `tools.js`, `discovery.js`, `favicon.svg`, `robots.txt`, and `sitemap.xml` are served at the domain root. The canonical URL, Open Graph URL, and sitemap are configured for `https://worldscope.calculatorflash.com/`; update them if the deployment address changes. Submit the sitemap to search engines after deployment. Search indexing and ranking are not guaranteed.
 
 The interactive map uses Leaflet and OpenStreetMap tiles, with attribution shown on the map. Respect the OpenStreetMap tile usage policy when deploying at scale.
 
@@ -42,3 +42,9 @@ Use **Search cities worldwide** to look up cities and towns in Open-Meteo's GeoN
 The sports calendar tracks the named 2027–2028 editions, including AFCON and the Rugby World Cup. It resolves their English Wikipedia pages to Wikidata entities and retrieves structured start/end/point-in-time and host location claims in the browser. It loads on entering the section, can be refreshed manually, and refreshes every six hours while the page is visible. Results include retrieval time, source and organiser links; unavailable fields are shown explicitly. Wikidata is community-maintained and may be incomplete or stale, and dates are calendar dates, not confirmed kickoff times. Always check the organisers for authoritative changes. The tracked list is fixed to these editions, not a comprehensive or automatically advancing list of all future events. In particular, previously circulated tournament dates can change and are not hard-coded as fact.
 
 Tests: `node tests/planning.test.js` and `node tests/discovery.test.js`. City search and sports adapters require browser network access to Open-Meteo, Wikipedia and Wikidata; country currency lookup uses REST Countries. Requests are made directly from the visitor's browser and are subject to provider availability, CORS, and rate limits.
+
+### Domain migration
+
+This repository is a static site: there is no application backend or server-side domain configuration to update. To complete the move, configure DNS and HTTPS for `worldscope.calculatorflash.com` in your hosting provider, publish the site there, and configure a permanent redirect from `worldclock.calculatorflash.com` to the corresponding URL on the new host. Verify the new origin before enabling redirects and submit its sitemap to search engines. These hosting and DNS changes are not performed by the repository.
+
+Browser storage is scoped to an origin. Existing clocks and theme preferences on `worldclock.calculatorflash.com` will not automatically transfer to `worldscope.calculatorflash.com`; users will need to recreate them unless a separate, consent-based migration mechanism is deployed. No storage keys or third-party API endpoints were changed by the rebrand.

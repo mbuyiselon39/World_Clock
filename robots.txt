@@ -1,3 +1,3 @@
 User-agent: *
 Allow: /
-Sitemap: https://worldclock.calculatorflash.com/sitemap.xml
+Sitemap: https://worldscope.calculatorflash.com/sitemap.xml
