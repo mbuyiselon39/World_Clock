@@ -1,0 +1,12 @@
+---
+pagination:
+  data: info
+  size: 1
+  alias: infoPage
+permalink: "/info/{{ infoPage.slug }}/index.html"
+layout: base.njk
+eleventyComputed:
+  title: "{{ infoPage.title }}"
+  description: "{{ infoPage.description }}"
+---
+<div class="eyebrow">WORLDSCOPE / INFORMATION</div><h1>{{ infoPage.heading }}</h1><p class="lead">{{ infoPage.body }}</p>{% if infoPage.slug == 'contact' %}<p><a class="button" href="https://github.com/mbuyiselon39/World_Clock/issues">Open the issue tracker ↗</a></p>{% endif %}

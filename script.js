@@ -115,8 +115,18 @@ function initializeMap() {
         map.markers = []; updateMapMarkers();
     } catch (_) { map = null; document.getElementById('mapFallback').hidden = false; }
 }
+function loadMapWhenVisible() {
+    const button=document.getElementById('loadMap');
+    button.addEventListener('click',()=>{
+        button.disabled=true; button.textContent='Loading map…';
+        const css=document.createElement('link'); css.rel='stylesheet'; css.href='https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'; document.head.append(css);
+        const script=document.createElement('script'); script.src='https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+        script.onload=()=>{initializeMap(); if(map) {document.getElementById('daylightToggle').disabled=false; button.textContent='Map loaded';} else {button.disabled=false;button.textContent='Retry map';}};
+        script.onerror=()=>{document.getElementById('mapFallback').hidden=false;button.disabled=false;button.textContent='Retry map';}; document.head.append(script);
+    });
+}
 document.addEventListener('DOMContentLoaded', () => {
-    loadPreferences(); renderClocks(); initializeMap(); setInterval(updateClocks, 1000);
+    loadPreferences(); renderClocks(); loadMapWhenVisible(); setInterval(updateClocks, 1000);
     document.getElementById('themeToggle').addEventListener('click', () => { document.body.classList.toggle('dark-theme'); updateThemeButton(); savePreferences(); });
     document.getElementById('addClockBtn').addEventListener('click', () => {
         const select = document.getElementById('timezoneSelect'), input = document.getElementById('customName'), message = document.getElementById('formMessage');

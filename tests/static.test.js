@@ -1,0 +1,16 @@
+const assert=require('node:assert/strict'), fs=require('node:fs'), vm=require('node:vm');
+const context={document:{addEventListener(){}},Intl,Date,console,TextEncoder}; vm.createContext(context);
+vm.runInContext(fs.readFileSync('planner-share.js','utf8'),context);vm.runInContext(fs.readFileSync('tools.js','utf8'),context);
+const {offsetMinutes,nextOffsetChange}=require('../site/assets/time-core.js');
+assert.equal(offsetMinutes(new Date('2026-01-01T00:00:00Z'),'Asia/Kolkata'),330);
+assert.equal(nextOffsetChange(new Date('2026-01-01T00:00:00Z'),'America/New_York').at.toISOString(),'2026-03-08T07:00:00.000Z');
+assert.equal(nextOffsetChange(new Date('2026-01-01T00:00:00Z'),'Africa/Johannesburg'),null);
+const start=context.localToInstants('2026-01-05T00:00','Europe/London')[0];
+const rank=context.rankMeetingSlots(start,'2026-01-05','Europe/London',[{name:'London',timezone:'Europe/London'},{name:'New York',timezone:'America/New_York'}]);
+assert.equal(rank[0].score,2);assert.equal(rank[0].instant.toISOString(),'2026-01-05T14:00:00.000Z');
+const ics=context.buildMeetingICS(new Date('2026-01-05T14:00:00Z'),'Hello, world; from\nLondon',new Date('2026-01-01T00:00:00Z'));
+assert.ok(ics.includes('DTSTART:20260105T140000Z'));assert.ok(ics.includes('DTEND:20260105T150000Z'));assert.ok(ics.includes('DESCRIPTION:Hello\\, world\\; from\\nLondon'));assert.ok(ics.endsWith('\r\n'));
+assert.ok(context.foldICSLine('é'.repeat(100)).split('\r\n').every(line=>Buffer.byteLength(line)<=75));
+assert.equal(context.validMeeting({v:1,start:'2026-01-05T14:00:00.000Z',clocks:[{name:'London',timezone:'Europe/London'}]}),true);
+assert.equal(context.validMeeting({v:1,start:'bad',clocks:[{name:'London',timezone:'Europe/London'}]}),false);
+console.log('Static, meeting and calendar tests passed.');

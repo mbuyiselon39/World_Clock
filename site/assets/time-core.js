@@ -1,0 +1,5 @@
+(function(root){
+ function offsetMinutes(date,zone){const parts=Object.fromEntries(new Intl.DateTimeFormat('en-US',{timeZone:zone,year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'}).formatToParts(date).map(p=>[p.type,p.value]));return Math.round((Date.UTC(+parts.year,+parts.month-1,+parts.day,+parts.hour,+parts.minute,+parts.second)-Math.floor(date.getTime()/1000)*1000)/60000);}
+ function nextOffsetChange(date,zone){const start=Math.floor(date.getTime()/60000)*60000, current=offsetMinutes(new Date(start),zone), limit=start+550*86400000; let previous=start; for(let t=start+86400000;t<=limit;t+=86400000){if(offsetMinutes(new Date(t),zone)!==current){let lo=previous,hi=t;while(hi-lo>60000){const mid=Math.floor((lo+hi)/120000)*60000;if(offsetMinutes(new Date(mid),zone)===current)lo=mid;else hi=mid;}return {at:new Date(hi),before:current,after:offsetMinutes(new Date(hi),zone)};}previous=t;}return null;}
+ const api={offsetMinutes,nextOffsetChange}; if(typeof module!=='undefined'&&module.exports)module.exports=api;else root.WorldScopeTime=api;
+})(typeof window!=='undefined'?window:globalThis);

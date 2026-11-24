@@ -1,0 +1,7 @@
+---
+layout: base.njk
+permalink: /country/index.html
+title: Country time zones
+description: Explore selected countries and their city clocks, or search the WorldScope world atlas.
+---
+<div class="eyebrow">THE WORLD / COUNTRY DIRECTORY</div><h1>Country time zones</h1><p class="lead">Browse selected country pages and local clocks. For more countries and territories, use our interactive atlas.</p><div class="grid">{% for country in catalog.countries %}<article class="card"><h3><a href="/country/{{ country.slug }}/">{{ country.name }}</a></h3><p>{{ country.cities.length }} selected city clock{% if country.cities.length != 1 %}s{% endif %}</p></article>{% endfor %}</div><p><a class="button" href="/#atlas">Open world atlas ↗</a></p>

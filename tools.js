@@ -57,25 +57,29 @@ function refreshToolCities() {
 }
 function showText(id, text) { document.getElementById(id).textContent=text; }
 function row(parent, title, text) { const item=document.createElement('div'); item.className='result-row'; const strong=document.createElement('strong'); strong.textContent=title; const detail=document.createElement('span'); detail.textContent=text; item.append(strong,detail); parent.append(item); }
+function rankMeetingSlots(start, date, zone, clocks) {
+ const choices=[];
+ // Check actual instants for the reference date, including short and long DST days.
+ for (let t=start.getTime();t<start.getTime()+27*3600000;t+=1800000) {
+  const instant=new Date(t), ref=zonedParts(instant,zone);
+  if (`${ref.year}-${String(ref.month).padStart(2,'0')}-${String(ref.day).padStart(2,'0')}`!==date) continue;
+  const local=clocks.map(c=>({clock:c, parts:zonedParts(instant,c.timezone)}));
+  const score=local.filter(({parts:p})=>!['Sat','Sun'].includes(p.weekday) && p.hour>=9 && (p.hour<16 || (p.hour===16 && p.minute===0))).length;
+  choices.push({instant,local,score});
+ }
+ choices.sort((a,b)=>b.score-a.score || a.instant-b.instant);
+ return choices;
+}
 function findMeetings() {
  const result=document.getElementById('meetingResults'); result.replaceChildren();
  const date=document.getElementById('meetingDate').value, zone=activeClocks.find(c=>clockId(c)===document.getElementById('meetingZone').value)?.timezone;
  if (!zone || !date || !activeClocks.length) return showText('meetingResults','Add at least one location and choose a date.');
  const start=localToInstants(date+'T00:00',zone);
  if (start.length!==1) return showText('meetingResults','Midnight on this date is ambiguous or unavailable in the reference city. Choose another date.');
- const choices=[];
- // Check actual instants for the reference date, including short and long DST days.
- for (let t=start[0].getTime();t<start[0].getTime()+27*3600000;t+=1800000) {
-  const instant=new Date(t), ref=zonedParts(instant,zone);
-  if (`${ref.year}-${String(ref.month).padStart(2,'0')}-${String(ref.day).padStart(2,'0')}`!==date) continue;
-  const local=activeClocks.map(c=>({clock:c, parts:zonedParts(instant,c.timezone)}));
-  const score=local.filter(({parts:p})=>!['Sat','Sun'].includes(p.weekday) && p.hour>=9 && (p.hour<16 || (p.hour===16 && p.minute===0))).length;
-  choices.push({instant,local,score});
- }
- choices.sort((a,b)=>b.score-a.score || a.instant-b.instant);
+ const choices=rankMeetingSlots(start[0], date, zone, activeClocks);
  if (!choices.length) return showText('meetingResults','No slots available for this date.');
  const intro=document.createElement('p'); intro.textContent=`Top slots · ${activeClocks.length} location${activeClocks.length===1?'':'s'} · full hour within business hours`; result.append(intro);
- choices.slice(0,5).forEach((c,i)=>row(result,`#${i+1} · ${c.score}/${activeClocks.length} within hours`,c.local.map(({clock})=>`${clock.name}: ${formatAt(c.instant,clock.timezone)}`).join(' | ')));
+ choices.slice(0,5).forEach((c,i)=>{ const slot=document.createElement('div'); row(slot,`#${i+1} · ${c.score}/${activeClocks.length} within hours`,c.local.map(({clock})=>`${clock.name}: ${formatAt(c.instant,clock.timezone)}`).join(' | ')); if(typeof addMeetingActions==='function') addMeetingActions(slot,c.instant,activeClocks.map(clock=>({name:clock.name,timezone:clock.timezone}))); result.append(slot); });
 }
 function convertTime() {
  const value=document.getElementById('convertDate').value, from=activeClocks.find(c=>clockId(c)===document.getElementById('convertFrom').value)?.timezone, to=activeClocks.find(c=>clockId(c)===document.getElementById('convertTo').value)?.timezone, raw=document.getElementById('flightMinutes').value, duration=Number(raw);
