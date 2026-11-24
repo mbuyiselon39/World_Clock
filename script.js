@@ -1,395 +1,120 @@
-// Store the clocks that are currently displayed
-let activeClocks = [
+const defaults = [
     { timezone: 'America/New_York', name: 'New York' },
     { timezone: 'Europe/London', name: 'London' },
     { timezone: 'Asia/Tokyo', name: 'Tokyo' },
     { timezone: 'Australia/Sydney', name: 'Sydney' }
 ];
-
-// Emoji map for regions
-const regionEmojis = {
-    'America': '🌎',
-    'Europe': '🌍',
-    'Asia': '🌏',
-    'Australia': '🌏',
-    'Pacific': '🌏',
-    'Africa': '🌍'
+let activeClocks = defaults.map(clock => ({ ...clock }));
+let map;
+const coordinates = {
+    'America/New_York':[40.71,-74.01], 'America/Chicago':[41.88,-87.63], 'America/Denver':[39.74,-104.99], 'America/Los_Angeles':[34.05,-118.24], 'America/Toronto':[43.65,-79.38], 'America/Vancouver':[49.28,-123.12], 'America/Mexico_City':[19.43,-99.13],
+    'Europe/London':[51.51,-0.13], 'Europe/Paris':[48.86,2.35], 'Europe/Berlin':[52.52,13.4], 'Europe/Rome':[41.9,12.5], 'Europe/Madrid':[40.42,-3.7], 'Europe/Moscow':[55.76,37.62],
+    'Asia/Tokyo':[35.69,139.69], 'Asia/Shanghai':[31.23,121.47], 'Asia/Hong_Kong':[22.32,114.17], 'Asia/Singapore':[1.35,103.82], 'Asia/Dubai':[25.2,55.27], 'Asia/Kolkata':[19.08,72.88], 'Asia/Seoul':[37.57,126.98],
+    'Australia/Sydney':[-33.87,151.21], 'Australia/Melbourne':[-37.81,144.96], 'Pacific/Auckland':[-36.85,174.76], 'America/Sao_Paulo':[-23.55,-46.63], 'America/Buenos_Aires':[-34.6,-58.38], 'America/Santiago':[-33.45,-70.67], 'Africa/Cairo':[30.04,31.24], 'Africa/Johannesburg':[-26.2,28.05], 'Africa/Lagos':[6.52,3.38]
 };
-
-// Get region from timezone
-function getRegionFromTimezone(timezone) {
-    const region = timezone.split('/')[0];
-    return regionEmojis[region] || '🌐';
+function savePreferences() {
+    try {
+        localStorage.setItem('activeClocks', JSON.stringify(activeClocks));
+        localStorage.setItem('theme', document.body.classList.contains('dark-theme'));
+    } catch (_) { /* The dashboard still works when storage is unavailable. */ }
 }
-
-// Function to create a clock element with more details and analog clock
-function createClockElement(timezone, cityName) {
-    const clockDiv = document.createElement('div');
-    clockDiv.className = 'clock';
-    clockDiv.dataset.timezone = timezone;
-
-    // Add background icon element
-    const bgIcon = document.createElement('div');
-    bgIcon.className = 'clock-background';
-    bgIcon.innerHTML = getRegionFromTimezone(timezone);
-    clockDiv.appendChild(bgIcon);
-
-    // Create city heading with flag/region emoji
-    const cityDiv = document.createElement('div');
-    cityDiv.className = 'city';
-    cityDiv.innerHTML = `${getRegionFromTimezone(timezone)} ${cityName}`;
-    clockDiv.appendChild(cityDiv);
-
-    // Add timezone info
-    const timezoneDiv = document.createElement('div');
-    timezoneDiv.className = 'timezone';
-    timezoneDiv.textContent = timezone.replace('_', ' ');
-    clockDiv.appendChild(timezoneDiv);
-
-    // Add digital time and date display
-    const timeDiv = document.createElement('div');
-    timeDiv.className = 'time';
-    clockDiv.appendChild(timeDiv);
-
-    const dateDiv = document.createElement('div');
-    dateDiv.className = 'date';
-    clockDiv.appendChild(dateDiv);
-
-    // Create analog clock
-    const analogClock = document.createElement('div');
-    analogClock.className = 'analog-clock';
-
-    // Add clock markers (hour marks)
-    for (let i = 1; i <= 12; i++) {
-        const marker = document.createElement('div');
-        marker.className = i % 3 === 0 ? 'clock-marker main' : 'clock-marker';
-        analogClock.appendChild(marker);
+function loadPreferences() {
+    try {
+        const saved = JSON.parse(localStorage.getItem('activeClocks'));
+        if (Array.isArray(saved)) activeClocks = saved.filter(c => {
+            if (!c || typeof c.name !== 'string' || typeof c.timezone !== 'string') return false;
+            try { new Intl.DateTimeFormat('en', { timeZone: c.timezone }); return true; } catch (_) { return false; }
+        });
+        if (localStorage.getItem('theme') !== 'false') document.body.classList.add('dark-theme');
+    } catch (_) { /* Ignore corrupt or inaccessible saved preferences. */ }
+    updateThemeButton();
+}
+function updateThemeButton() {
+    const dark = document.body.classList.contains('dark-theme');
+    const button = document.getElementById('themeToggle');
+    button.querySelector('i').className = dark ? 'fas fa-sun' : 'fas fa-moon';
+    button.querySelector('span').textContent = dark ? 'Light Mode' : 'Dark Mode';
+}
+function timeDifference(timezone, now) {
+    const parts = new Intl.DateTimeFormat('en-US', {timeZone: timezone, year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit', second:'2-digit', hourCycle:'h23'}).formatToParts(now);
+    const p = Object.fromEntries(parts.map(part => [part.type, part.value]));
+    const targetOffset = Math.round((Date.UTC(+p.year, +p.month - 1, +p.day, +p.hour, +p.minute, +p.second) - Math.floor(now.getTime() / 1000) * 1000) / 60000);
+    const diff = targetOffset + now.getTimezoneOffset();
+    if (!diff) return 'Same time as local';
+    const hours = Math.floor(Math.abs(diff) / 60), minutes = Math.abs(diff) % 60;
+    return `${hours ? hours + 'h' : ''}${hours && minutes ? ' ' : ''}${minutes ? minutes + 'm' : ''} ${diff > 0 ? 'ahead' : 'behind'}`;
+}
+function createClockElement(clock, index) {
+    const card = document.createElement('article');
+    card.className = 'clock';
+    card.dataset.timezone = clock.timezone;
+    card.innerHTML = `<div class="card-top"><span class="card-number">LOCATION / ${String(index + 1).padStart(2, '0')}</span><div class="clock-actions"><button class="btn-icon favorite" type="button"><i></i></button><button class="btn-icon remove" type="button"><i class="fas fa-times"></i></button></div></div><div class="city"></div><div class="timezone"></div><div class="clock-middle"><div><div class="time"></div><div class="date"></div></div><div class="analog-clock" aria-hidden="true"><div class="dial-inner"></div><div class="hour-hand"></div><div class="minute-hand"></div><div class="second-hand"></div><div class="clock-center"></div></div></div><div class="clock-footer"><span class="time-difference"></span><span class="card-live"><span></span> LIVE</span></div>`;
+    card.querySelector('.city').textContent = clock.name;
+    card.querySelector('.timezone').textContent = clock.timezone.replaceAll('_', ' ');
+    const fav = card.querySelector('.favorite');
+    function setFavorite() {
+        fav.querySelector('i').className = clock.favorite ? 'fas fa-star' : 'far fa-star';
+        fav.classList.toggle('is-favorite', !!clock.favorite);
+        fav.setAttribute('aria-label', `${clock.favorite ? 'Remove' : 'Add'} ${clock.name} ${clock.favorite ? 'from' : 'to'} favorites`);
+        fav.setAttribute('aria-pressed', !!clock.favorite);
     }
-
-    // Add clock hands
-    const hourHand = document.createElement('div');
-    hourHand.className = 'hour-hand';
-
-    const minuteHand = document.createElement('div');
-    minuteHand.className = 'minute-hand';
-
-    const secondHand = document.createElement('div');
-    secondHand.className = 'second-hand';
-
-    const clockCenter = document.createElement('div');
-    clockCenter.className = 'clock-center';
-
-    analogClock.appendChild(hourHand);
-    analogClock.appendChild(minuteHand);
-    analogClock.appendChild(secondHand);
-    analogClock.appendChild(clockCenter);
-
-    // Add time difference indicator
-    const clockFooter = document.createElement('div');
-    clockFooter.className = 'clock-footer';
-
-    const timeDifference = document.createElement('div');
-    timeDifference.className = 'time-difference';
-    clockFooter.appendChild(timeDifference);
-
-    // Add clock actions
-    const clockActions = document.createElement('div');
-    clockActions.className = 'clock-actions';
-
-    const favoriteBtn = document.createElement('button');
-    favoriteBtn.className = 'btn-icon';
-    favoriteBtn.innerHTML = '<i class="far fa-star"></i>';
-    favoriteBtn.title = 'Add to favorites';
-    favoriteBtn.addEventListener('click', () => {
-        const icon = favoriteBtn.querySelector('i');
-        if (icon.classList.contains('far')) {
-            icon.classList.replace('far', 'fas');
-            icon.style.color = '#f6ad55';
-        } else {
-            icon.classList.replace('fas', 'far');
-            icon.style.color = '';
-        }
-    });
-    clockActions.appendChild(favoriteBtn);
-
-    const removeBtn = document.createElement('button');
-    removeBtn.className = 'btn-icon';
-    removeBtn.innerHTML = '<i class="fas fa-times"></i>';
-    removeBtn.title = 'Remove clock';
-    removeBtn.addEventListener('click', () => {
-        clockDiv.style.animation = 'fadeIn 0.5s ease-out reverse forwards';
-        setTimeout(() => {
-            clockDiv.remove();
-            activeClocks = activeClocks.filter(clock => clock.timezone !== timezone);
-            updateWorldMapMarkers(map); // Update markers after removing clock
-        }, 500);
-    });
-    clockActions.appendChild(removeBtn);
-
-    clockFooter.appendChild(clockActions);
-
-    // Add all elements to the clock div
-    clockDiv.appendChild(analogClock);
-    clockDiv.appendChild(clockFooter);
-
-    return clockDiv;
+    setFavorite();
+    fav.addEventListener('click', () => { clock.favorite = !clock.favorite; setFavorite(); savePreferences(); });
+    const remove = card.querySelector('.remove');
+    remove.setAttribute('aria-label', `Remove ${clock.name} clock`);
+    remove.addEventListener('click', () => { activeClocks = activeClocks.filter(c => c !== clock); renderClocks(); updateMapMarkers(); savePreferences(); });
+    return card;
 }
-
-// Calculate time difference between local time and another timezone
-function calculateTimeDifference(timezone) {
-    const localTime = new Date();
-    const localOffset = localTime.getTimezoneOffset() * 60000;
-    const targetTime = new Date(new Date().toLocaleString('en-US', { timeZone: timezone }));
-
-    // Get UTC timestamps and calculate difference in hours
-    const utcLocal = localTime.getTime() + localOffset;
-    const utcTarget = targetTime.getTime() + localOffset;
-    const diffHours = Math.round((utcTarget - utcLocal) / 3600000);
-
-    if (diffHours === 0) {
-        return 'Same time as local';
-    } else if (diffHours > 0) {
-        return `${diffHours} hour${diffHours !== 1 ? 's' : ''} ahead`;
-    } else {
-        return `${Math.abs(diffHours)} hour${Math.abs(diffHours) !== 1 ? 's' : ''} behind`;
-    }
+function renderClocks() {
+    const container = document.getElementById('clocksContainer');
+    container.replaceChildren(...activeClocks.map(createClockElement));
+    document.getElementById('emptyState').hidden = activeClocks.length > 0;
+    updateClocks();
 }
-
-// Update all clocks
 function updateClocks() {
     const now = new Date();
-
-    // Update each clock
-    activeClocks.forEach(clock => {
-        // Find the clock element
-        const clockElement = document.querySelector(`.clock[data-timezone="${clock.timezone}"]`);
-        if (!clockElement) return;
-
-        // Format the time for the specific timezone
-        const options = {
-            timeZone: clock.timezone,
-            hour: 'numeric',
-            minute: '2-digit',
-            second: '2-digit',
-            hour12: true
-        };
-
-        const timeString = now.toLocaleTimeString('en-US', options);
-
-        // Format the date for the specific timezone
-        const dateOptions = {
-            timeZone: clock.timezone,
-            weekday: 'long',
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric'
-        };
-
-        const dateString = now.toLocaleDateString('en-US', dateOptions);
-
-        // Update the digital clock display
-        clockElement.querySelector('.time').textContent = timeString;
-        clockElement.querySelector('.date').textContent = dateString;
-
-        // Update the time difference
-        const timeDiff = calculateTimeDifference(clock.timezone);
-        clockElement.querySelector('.time-difference').textContent = timeDiff;
-
-        // Get time components for analog clock
-        const timeParts = now.toLocaleString('en-US', {
-            timeZone: clock.timezone,
-            hour: 'numeric',
-            minute: 'numeric',
-            second: 'numeric',
-            hour12: false
-        }).split(/[:\s]/);
-
-        let hours = parseInt(timeParts[0]);
-        if (timeParts.length > 3 && timeParts[3].toLowerCase() === 'pm' && hours < 12) {
-            hours += 12;
-        }
-        const minutes = parseInt(timeParts[1]);
-        const seconds = parseInt(timeParts[2]);
-
-        // Calculate angles for clock hands
-        const hourAngle = (hours % 12) * 30 + minutes * 0.5;
-        const minuteAngle = minutes * 6;
-        const secondAngle = seconds * 6;
-
-        // Update analog clock hands
-        const hourHand = clockElement.querySelector('.hour-hand');
-        const minuteHand = clockElement.querySelector('.minute-hand');
-        const secondHand = clockElement.querySelector('.second-hand');
-
-        hourHand.style.transform = `rotate(${hourAngle}deg)`;
-        minuteHand.style.transform = `rotate(${minuteAngle}deg)`;
-        secondHand.style.transform = `rotate(${secondAngle}deg)`;
+    document.querySelectorAll('.clock').forEach(card => {
+        const tz = card.dataset.timezone;
+        const parts = new Intl.DateTimeFormat('en-US', {timeZone:tz, hour:'2-digit', minute:'2-digit', second:'2-digit', hourCycle:'h23'}).formatToParts(now);
+        const p = Object.fromEntries(parts.map(part => [part.type, part.value]));
+        card.querySelector('.time').textContent = `${p.hour}:${p.minute}:${p.second}`;
+        card.querySelector('.date').textContent = new Intl.DateTimeFormat('en-US', {timeZone:tz, weekday:'long', month:'short', day:'numeric'}).format(now);
+        card.querySelector('.time-difference').textContent = timeDifference(tz, now);
+        card.querySelector('.hour-hand').style.transform = `rotate(${(+p.hour % 12) * 30 + +p.minute * .5}deg)`;
+        card.querySelector('.minute-hand').style.transform = `rotate(${+p.minute * 6}deg)`;
+        card.querySelector('.second-hand').style.transform = `rotate(${+p.second * 6}deg)`;
     });
-
-    // Update local time in footer
-    const localTimeElement = document.getElementById('localTime');
-    localTimeElement.textContent = now.toLocaleTimeString('en-US', {
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit'
-    });
+    document.getElementById('localTime').textContent = now.toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit', second:'2-digit'});
 }
-
-// Initialize the Leaflet map
-let map; // Global map variable
-
-function initializeWorldMap() {
-    // Initialize the map
-    map = L.map('world-map').setView([20, 0], 2);
-
-    // Add a tile layer (OpenStreetMap)
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors'
-    }).addTo(map);
-
-    // Add markers for active clocks
-    updateWorldMapMarkers(map);
-}
-
-// Update clock markers on the map
-function updateWorldMapMarkers(map) {
-    // Remove existing markers (if any)
-    if (map.markers) {
-        map.markers.forEach(marker => marker.remove());
-    }
+function updateMapMarkers() {
+    if (!map) return;
+    map.markers.forEach(marker => marker.remove());
     map.markers = [];
-
-    // Approximate coordinates for common timezones
-    const timezoneCoordinates = {
-        'America/New_York': { lat: 40.7128, lng: -74.0060 },
-        'Europe/London': { lat: 51.5074, lng: -0.1278 },
-        'Asia/Tokyo': { lat: 35.6895, lng: 139.6917 },
-        'Australia/Sydney': { lat: -33.8688, lng: 151.2093 }
-    };
-
-    // Add markers for active clocks
     activeClocks.forEach(clock => {
-        const coords = timezoneCoordinates[clock.timezone];
-        if (coords) {
-            const marker = L.marker([coords.lat, coords.lng]).addTo(map);
-            marker.bindPopup(`${clock.name}<br>${clock.timezone}`);
-            map.markers.push(marker);
-        }
+        if (!coordinates[clock.timezone]) return;
+        const popup = document.createElement('div');
+        const name = document.createElement('strong'); name.textContent = clock.name;
+        popup.append(name, document.createElement('br'), document.createTextNode(clock.timezone));
+        map.markers.push(L.marker(coordinates[clock.timezone]).addTo(map).bindPopup(popup));
     });
 }
-
-// Initialize the clocks container
-function initializeClocks() {
-    const clocksContainer = document.getElementById('clocksContainer');
-    clocksContainer.innerHTML = '';
-
-    activeClocks.forEach(clock => {
-        const clockElement = createClockElement(clock.timezone, clock.name);
-        clocksContainer.appendChild(clockElement);
+function initializeMap() {
+    if (typeof L === 'undefined') { document.getElementById('mapFallback').hidden = false; return; }
+    try {
+        map = L.map('world-map', {scrollWheelZoom:false}).setView([20, 0], 2);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors', maxZoom:19 }).addTo(map);
+        map.markers = []; updateMapMarkers();
+    } catch (_) { map = null; document.getElementById('mapFallback').hidden = false; }
+}
+document.addEventListener('DOMContentLoaded', () => {
+    loadPreferences(); renderClocks(); initializeMap(); setInterval(updateClocks, 1000);
+    document.getElementById('themeToggle').addEventListener('click', () => { document.body.classList.toggle('dark-theme'); updateThemeButton(); savePreferences(); });
+    document.getElementById('addClockBtn').addEventListener('click', () => {
+        const select = document.getElementById('timezoneSelect'), input = document.getElementById('customName'), message = document.getElementById('formMessage');
+        if (!select.value) { message.textContent = 'Please choose a city or time zone.'; select.focus(); return; }
+        if (activeClocks.some(c => c.timezone === select.value)) { message.textContent = 'This time zone is already on your dashboard.'; return; }
+        activeClocks.push({timezone:select.value, name:input.value.trim() || select.selectedOptions[0].textContent});
+        select.value = ''; input.value = ''; message.textContent = 'Location added to your dashboard.';
+        renderClocks(); updateMapMarkers(); savePreferences();
     });
-}
-
-// Handle adding new clocks
-function handleAddClock() {
-    const timezoneSelect = document.getElementById('timezoneSelect');
-    const customName = document.getElementById('customName');
-
-    const selectedTimezone = timezoneSelect.value;
-    if (!selectedTimezone) {
-        alert('Please select a timezone');
-        return;
-    }
-
-    // Check if clock already exists
-    if (activeClocks.some(clock => clock.timezone === selectedTimezone)) {
-        alert('This timezone is already displayed');
-        return;
-    }
-
-    const cityName = customName.value.trim() ||
-                    timezoneSelect.options[timezoneSelect.selectedIndex].text;
-
-    // Add to active clocks
-    activeClocks.push({
-        timezone: selectedTimezone,
-        name: cityName
-    });
-
-    // Create and add new clock element
-    const clockElement = createClockElement(selectedTimezone, cityName);
-    document.getElementById('clocksContainer').appendChild(clockElement);
-
-    // Update map markers
-    updateWorldMapMarkers(map);
-
-    // Reset form
-    timezoneSelect.value = '';
-    customName.value = '';
-}
-
-// Handle theme toggle
-function handleThemeToggle() {
-    const body = document.body;
-    const themeToggle = document.getElementById('themeToggle');
-    const icon = themeToggle.querySelector('i');
-    const text = themeToggle.querySelector('span');
-
-    body.classList.toggle('dark-theme');
-
-    if (body.classList.contains('dark-theme')) {
-        icon.classList.replace('fa-moon', 'fa-sun');
-        text.textContent = 'Light Mode';
-    } else {
-        icon.classList.replace('fa-sun', 'fa-moon');
-        text.textContent = 'Dark Mode';
-    }
-}
-
-// Save clock preferences to localStorage
-function saveClockPreferences() {
-    localStorage.setItem('activeClocks', JSON.stringify(activeClocks));
-    localStorage.setItem('theme', document.body.classList.contains('dark-theme'));
-}
-
-// Load clock preferences from localStorage
-function loadClockPreferences() {
-    const savedClocks = localStorage.getItem('activeClocks');
-    const savedTheme = localStorage.getItem('theme');
-
-    if (savedClocks) {
-        activeClocks = JSON.parse(savedClocks);
-    }
-
-    if (savedTheme === 'true') {
-        document.body.classList.add('dark-theme');
-        const themeToggle = document.getElementById('themeToggle');
-        const icon = themeToggle.querySelector('i');
-        const text = themeToggle.querySelector('span');
-        icon.classList.replace('fa-moon', 'fa-sun');
-        text.textContent = 'Light Mode';
-    }
-}
-
-// Initialize the application
-function initializeApp() {
-    // Load saved preferences
-    loadClockPreferences();
-
-    // Initialize clocks and map
-    initializeClocks();
-    initializeWorldMap();
-
-    // Start clock updates
-    updateClocks();
-    setInterval(updateClocks, 1000);
-
-    // Add event listeners
-    document.getElementById('addClockBtn').addEventListener('click', handleAddClock);
-    document.getElementById('themeToggle').addEventListener('click', handleThemeToggle);
-
-    // Save preferences when closing/reloading
-    window.addEventListener('beforeunload', saveClockPreferences);
-}
-
-// Start the application when DOM is loaded
-document.addEventListener('DOMContentLoaded', initializeApp);
+});

@@ -1,96 +1,26 @@
-# 🌍 World Clock Application 🕒
+# World Clock
 
-A **World Clock Application** that displays the current time in multiple timezones, complete with an interactive world map, analog and digital clocks, and the ability to add or remove clocks. Built with **JavaScript**, **Leaflet.js** (for the interactive map), and **CSS** for styling.
+A responsive world-clock dashboard for comparing local times across cities. The site is intended to be hosted at **https://worldclock.calculatorflash.com/**.
 
-## ✨ Features
+## Features
 
-* **Multiple Timezones**: Display clocks for cities like New York, London, Tokyo, and Sydney ⏰
-* **Interactive World Map**: View the locations of the selected timezones on a realistic world map powered by **Leaflet.js** 🗺️
-* **Analog and Digital Clocks**: Each clock shows both analog and digital time 🕰️
-* **Add/Remove Clocks**: Easily add or remove clocks for different timezones ➕➖
-* **Time Difference**: See how many hours ahead or behind each timezone is compared to your local time ⏱️
-* **Dark/Light Mode**: Toggle between dark and light themes for better visibility 🌓
+- Live digital and analog clocks, local dates, and differences from your device's time zone. Time zone and daylight-saving calculations use the browser's `Intl` API.
+- Add or remove locations, give them custom labels, and mark favorites. Clocks, favorites, and the theme are saved in browser storage when available.
+- Interactive Leaflet map with markers for the locations in the selector. Clocks remain usable if the map library cannot load.
+- Light and dark themes, responsive layouts, and keyboard-accessible controls.
 
-## 📸 Screenshots
+## Run locally
 
-*Main interface with clocks and world map.*
-![Screenshot of the World Clock App](images/screenshot.png)
-*Adding a new clock with the timezone selector.*
+This is a static site; no build step is required. Serve the repository root with any static web server, for example:
 
-## 🚀 How to Use
-
-1. **View Clocks**: The application displays clocks for predefined timezones (e.g., New York, London, Tokyo, Sydney).
-2. **Add a Clock**:
-   * Select a timezone from the dropdown menu.
-   * Optionally, provide a custom name for the city.
-   * Click "Add Clock" to add it to the display and map.
-3. **Remove a Clock**: Click the "×" button on any clock to remove it.
-4. **Toggle Theme**: Switch between dark and light modes using the theme toggle button.
-
-## 🛠️ Setup Instructions
-
-### Prerequisites
-
-* A modern web browser (e.g., Chrome, Firefox, Edge) 🌐
-* An internet connection (to load Leaflet.js and map tiles) 📡
-
-### Steps
-
-1. **Clone the Repository**:
-```bash
-git clone https://github.com/NickiMash17/world-clock-app.git
-cd world-clock-app
+```sh
+python3 -m http.server 8000
 ```
 
-2. **Open the Application**:
-   * Open the `index.html` file in your browser.
-3. **Run Locally**:
-   * If you have a local server (e.g., `http-server` or `Live Server`), serve the project folder and open it in your browser.
+Visit `http://localhost:8000/`. The map, map tiles, fonts, and icons require internet access. The clock calculations use your device's system time and its time-zone database.
 
-## 💻 Technologies Used
+## Deployment and SEO
 
-* **HTML**: Structure of the application 📄
-* **CSS**: Styling for clocks, map, and themes 🎨
-* **JavaScript**: Core logic for clocks, time calculations, and interactivity ⚙️
-* **Leaflet.js**: Interactive world map with markers for each timezone 🗺️
-* **OpenStreetMap**: Tile layer for the world map 🌐
+Publish the repository root to the subdomain over HTTPS, ensuring `index.html`, `style.css`, `script.js`, `favicon.svg`, `robots.txt`, and `sitemap.xml` are served at the domain root. The canonical URL, Open Graph URL, and sitemap are configured for `https://worldclock.calculatorflash.com/`; update them if the deployment address changes. Submit the sitemap to search engines after deployment. Search indexing and ranking are not guaranteed.
 
-## 📁 Code Structure
-
-* `index.html`: Main HTML file.
-* `styles.css`: Styles for the application.
-* `script.js`: JavaScript code for clocks, map, and interactivity.
-* `images/`: Folder for map images or other assets.
-
-
-## 🔧 Customization
-
-* **Add More Timezones**:
-   * Update the `timezoneCoordinates` object in `script.js` with new latitude and longitude values.
-   * Add new options to the timezone dropdown in `index.html`.
-* **Change Map Style**:
-   * Replace the OpenStreetMap tile layer with a different one (e.g., Mapbox, Google Maps).
-* **Add More Features**:
-   * Add a search bar to find timezones.
-   * Implement a favorites system for frequently used clocks.
-
-## 📜 License
-
-This project is licensed under the **MIT License**. See the LICENSE file for details.
-
-## 👏 Acknowledgments
-
-* **Leaflet.js**: For the interactive map functionality 🙌
-* **OpenStreetMap**: For providing free map tiles 🌍
-* **NASA's Blue Marble**: For the realistic world map image (optional) 🌎
-
-## 📧 Contact
-
-For questions or feedback, feel free to reach out:
-
-* 💼 **Developer:** *Nicolette Mashaba*  
-* 📧 Email: [nene171408@gmail.com](nene171408@gmail.com)  
-* 🔗 [LinkedIn](https://www.linkedin.com/in/nicolette-mashaba-b094a5221/) | [GitHub](https://github.com/NickiMash17)  
-
-Enjoy using the **World Clock Application**! 🌍⏰🌏
-
+The interactive map uses Leaflet and OpenStreetMap tiles, with attribution shown on the map. Respect the OpenStreetMap tile usage policy when deploying at scale.
