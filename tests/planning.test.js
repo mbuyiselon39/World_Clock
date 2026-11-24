@@ -1,0 +1,14 @@
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const vm = require('node:vm');
+const context = { document: { addEventListener() {} }, Intl, Date, console };
+vm.createContext(context);
+vm.runInContext(fs.readFileSync('tools.js', 'utf8'), context);
+const instants = (value, zone) => Array.from(context.localToInstants(value, zone), date => date.toISOString());
+assert.deepEqual(instants('2026-03-08T02:30', 'America/New_York'), [], 'spring-forward gap');
+assert.deepEqual(instants('2026-11-01T01:30', 'America/New_York'), ['2026-11-01T05:30:00.000Z', '2026-11-01T06:30:00.000Z'], 'fall-back ambiguity');
+assert.deepEqual(instants('2026-01-01T12:00', 'Asia/Kolkata'), ['2026-01-01T06:30:00.000Z'], 'fractional offset');
+assert.deepEqual(instants('2026-02-30T12:00', 'UTC'), [], 'invalid date');
+assert.equal(context.solarAt([0, 0], new Date('2026-03-20T12:00:00Z')), true);
+assert.equal(context.solarAt([0, 0], new Date('2026-03-20T00:00:00Z')), false);
+console.log('Planning calculations passed.');

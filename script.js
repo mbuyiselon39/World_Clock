@@ -48,7 +48,7 @@ function createClockElement(clock, index) {
     const card = document.createElement('article');
     card.className = 'clock';
     card.dataset.timezone = clock.timezone;
-    card.innerHTML = `<div class="card-top"><span class="card-number">LOCATION / ${String(index + 1).padStart(2, '0')}</span><div class="clock-actions"><button class="btn-icon favorite" type="button"><i></i></button><button class="btn-icon remove" type="button"><i class="fas fa-times"></i></button></div></div><div class="city"></div><div class="timezone"></div><div class="clock-middle"><div><div class="time"></div><div class="date"></div></div><div class="analog-clock" aria-hidden="true"><div class="dial-inner"></div><div class="hour-hand"></div><div class="minute-hand"></div><div class="second-hand"></div><div class="clock-center"></div></div></div><div class="clock-footer"><span class="time-difference"></span><span class="card-live"><span></span> LIVE</span></div>`;
+    card.innerHTML = `<div class="card-top"><span class="card-number">LOCATION / ${String(index + 1).padStart(2, '0')}</span><div class="clock-actions"><button class="btn-icon favorite" type="button"><i></i></button><button class="btn-icon remove" type="button"><i class="fas fa-times"></i></button></div></div><div class="city"></div><div class="timezone"></div><div class="clock-middle"><div><div class="time"></div><div class="date"></div></div><div class="analog-clock" aria-hidden="true"><div class="dial-inner"></div><div class="hour-hand"></div><div class="minute-hand"></div><div class="second-hand"></div><div class="clock-center"></div></div></div><div class="clock-footer"><span class="time-difference"></span><span class="day-status card-live">LIVE</span></div>`;
     card.querySelector('.city').textContent = clock.name;
     card.querySelector('.timezone').textContent = clock.timezone.replaceAll('_', ' ');
     const fav = card.querySelector('.favorite');
@@ -70,6 +70,7 @@ function renderClocks() {
     container.replaceChildren(...activeClocks.map(createClockElement));
     document.getElementById('emptyState').hidden = activeClocks.length > 0;
     updateClocks();
+    document.dispatchEvent(new Event('clocksChanged'));
 }
 function updateClocks() {
     const now = new Date();
@@ -80,6 +81,7 @@ function updateClocks() {
         card.querySelector('.time').textContent = `${p.hour}:${p.minute}:${p.second}`;
         card.querySelector('.date').textContent = new Intl.DateTimeFormat('en-US', {timeZone:tz, weekday:'long', month:'short', day:'numeric'}).format(now);
         card.querySelector('.time-difference').textContent = timeDifference(tz, now);
+        if (typeof solarStatus === 'function') card.querySelector('.day-status').textContent = solarStatus(tz, now);
         card.querySelector('.hour-hand').style.transform = `rotate(${(+p.hour % 12) * 30 + +p.minute * .5}deg)`;
         card.querySelector('.minute-hand').style.transform = `rotate(${+p.minute * 6}deg)`;
         card.querySelector('.second-hand').style.transform = `rotate(${+p.second * 6}deg)`;
