@@ -3,16 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>World Clock — Current Local Time Around the World</title>
-    <meta name="description" content="Keep track of local times around the world. Compare time zones, customize your clocks, and explore cities on an interactive map with World Clock.">
-    <link rel="canonical" href="https://worldclock.calculatorflash.com/">
+    <title>WorldScope — World Clocks, Travel &amp; Location Insights</title>
+    <meta name="description" content="Explore world clocks, compare time zones, plan meetings and trips, and discover location insights with WorldScope.">
+    <link rel="canonical" href="https://worldscope.calculatorflash.com/">
     <meta name="robots" content="index, follow">
     <meta name="theme-color" content="#080e1c">
     <meta property="og:type" content="website">
-    <meta property="og:title" content="World Clock — Current Local Time Around the World">
+    <meta property="og:title" content="WorldScope — World Clocks, Travel &amp; Location Insights">
     <meta property="og:description" content="A clearer view of time around the world. Compare cities and time zones in one place.">
-    <meta property="og:url" content="https://worldclock.calculatorflash.com/">
-    <meta property="og:site_name" content="World Clock">
+    <meta property="og:url" content="https://worldscope.calculatorflash.com/">
+    <meta property="og:site_name" content="WorldScope">
     <meta name="twitter:card" content="summary">
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -22,12 +22,12 @@
     <script defer src="script.js"></script>
     <script defer src="tools.js"></script>
     <script defer src="discovery.js"></script>
-    <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"World Clock","url":"https://worldclock.calculatorflash.com/","description":"Compare current local times in cities around the world.","applicationCategory":"UtilitiesApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}</script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"WorldScope","url":"https://worldscope.calculatorflash.com/","description":"Explore world clocks, time zone planning tools and location insights.","applicationCategory":"UtilitiesApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}</script>
 </head>
 <body>
 <div class="site-shell">
     <header class="topbar">
-        <a class="brand" href="/" aria-label="World Clock home"><span class="brand-icon"><i class="fa-solid fa-globe"></i></span><span>world<span class="brand-accent">clock</span><small>BY CALCULATOR FLASH</small></span></a>
+        <a class="brand" href="/" aria-label="WorldScope home"><span class="brand-icon"><i class="fa-solid fa-globe"></i></span><span>world<span class="brand-accent">scope</span><small>BY CALCULATOR FLASH</small></span></a>
         <nav aria-label="Main navigation"><a class="nav-active" href="#clocks">Dashboard</a><a href="#planning">Planning tools</a><a href="#insights">Location intelligence</a><a href="#sports">Sports calendar</a><a href="#explore">Explore map</a><a href="#about">About</a></nav>
         <div class="header-right"><span class="live-indicator"><span></span> LIVE SYNC</span><button id="themeToggle" class="theme-toggle" type="button" aria-label="Toggle color theme"><i class="fas fa-moon"></i><span>Dark Mode</span></button></div>
     </header>
@@ -94,9 +94,9 @@
         </section>
         <section id="sports" class="tools-section" aria-labelledby="sports-title"><div class="section-heading"><div><div class="eyebrow muted">AROUND THE WORLD <span class="heading-line"></span> 04</div><h2 id="sports-title">Global sports calendar <span class="heading-spark">✳</span></h2><p>Follow upcoming tournaments and check dates with their organisers.</p></div></div><div class="tool-card"><div class="sports-controls"><div><div class="tool-kicker">EVENTS / WORLDWIDE</div><h3>Major tournaments</h3><p>Dates and locations are retrieved from Wikidata, not live fixture feeds. Schedules can change; always confirm with the organiser.</p></div><button class="btn" type="button" id="refreshSports">Load sports calendar ↗</button></div><p id="sportsStatus" class="search-help" role="status">Load the calendar to retrieve the latest available data.</p><div id="sportsResults" class="sports-grid"></div></div></section>
         <section class="map-section" id="explore" aria-labelledby="map-title"><div class="section-heading"><div><div class="eyebrow muted">A DIFFERENT PERSPECTIVE <span class="heading-line"></span> 02</div><h2 id="map-title">Explore the world <span class="heading-spark">✳</span></h2><p>Your selected locations, mapped out.</p></div><span class="map-caption"><span class="pulse"></span> INTERACTIVE MAP</span></div><div class="map-tools"><button type="button" class="outline-link" id="daylightToggle" aria-pressed="false">☀ Show approximate daylight layer</button><span>Approximate solar position; updates every 10 minutes.</span></div><div id="world-map" aria-label="Map of selected clock locations"></div><p id="mapFallback" class="map-fallback" hidden>Map unavailable. Your clocks will continue to work.</p></section>
-        <section id="about" class="about"><div><div class="eyebrow muted">TIME, SIMPLIFIED</div><h2>The world is closer<br>than you think.</h2></div><p>From planning a meeting across continents to checking in with loved ones, World Clock helps you compare current local times at a glance. Times automatically reflect daylight saving changes in each location.</p></section>
+        <section id="about" class="about"><div><div class="eyebrow muted">TIME, SIMPLIFIED</div><h2>The world is closer<br>than you think.</h2></div><p>From planning a meeting across continents to checking in with loved ones, WorldScope helps you compare current local times at a glance. Times automatically reflect daylight saving changes in each location.</p></section>
     </main>
-    <footer><a class="brand footer-brand" href="/"><span class="brand-icon"><i class="fa-solid fa-globe"></i></span><span>world<span class="brand-accent">clock</span></span></a><p>Made for a world that never stops.</p><div class="current-time"><span class="pulse"></span> YOUR LOCAL TIME <strong id="localTime">--:--:--</strong></div><div class="footer-bottom"><span>© World Clock · A Calculator Flash experience</span><span>TIME IS ON YOUR SIDE <span class="brand-accent">✳</span></span></div></footer>
+    <footer><a class="brand footer-brand" href="/"><span class="brand-icon"><i class="fa-solid fa-globe"></i></span><span>world<span class="brand-accent">scope</span></span></a><p>Made for a world that never stops.</p><div class="current-time"><span class="pulse"></span> YOUR LOCAL TIME <strong id="localTime">--:--:--</strong></div><div class="footer-bottom"><span>© WorldScope · A Calculator Flash experience</span><span>TIME IS ON YOUR SIDE <span class="brand-accent">✳</span></span></div></footer>
 </div>
 <noscript>Please enable JavaScript to see live clocks and the interactive map.</noscript>
 </body>
