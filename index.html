@@ -2,35 +2,40 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>World Clock Dashboard</title>
-    <link rel="stylesheet" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>World Clock — Current Local Time Around the World</title>
+    <meta name="description" content="Keep track of local times around the world. Compare time zones, customize your clocks, and explore cities on an interactive map with World Clock.">
+    <link rel="canonical" href="https://worldclock.calculatorflash.com/">
+    <meta name="robots" content="index, follow">
+    <meta name="theme-color" content="#080e1c">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="World Clock — Current Local Time Around the World">
+    <meta property="og:description" content="A clearer view of time around the world. Compare cities and time zones in one place.">
+    <meta property="og:url" content="https://worldclock.calculatorflash.com/">
+    <meta property="og:site_name" content="World Clock">
+    <meta name="twitter:card" content="summary">
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <link rel="stylesheet" href="style.css">
+    <script defer src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script defer src="script.js"></script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"World Clock","url":"https://worldclock.calculatorflash.com/","description":"Compare current local times in cities around the world.","applicationCategory":"UtilitiesApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}</script>
 </head>
 <body>
-    <div class="container">
-        <div class="background-pattern"></div>
-        <div class="content">
-            <header>
-                <h1><i class="fas fa-globe-americas"></i> World Clock Dashboard</h1>
-                <button id="themeToggle" class="theme-toggle">
-                    <i class="fas fa-moon"></i>
-                    <span>Dark Mode</span>
-                </button>
-            </header>
-            
-            <div class="clocks" id="clocksContainer">
-             
-            </div>
-            
-            <div class="add-clock-section">
-                <h2 class="section-title">Add New Clock</h2>
-                <div class="add-clock-form">
-                    <div class="form-group">
-                        <label for="timezoneSelect">Select City/Timezone</label>
-                        <select id="timezoneSelect">
+<div class="site-shell">
+    <header class="topbar">
+        <a class="brand" href="/" aria-label="World Clock home"><span class="brand-icon"><i class="fa-solid fa-globe"></i></span><span>world<span class="brand-accent">clock</span><small>BY CALCULATOR FLASH</small></span></a>
+        <nav aria-label="Main navigation"><a class="nav-active" href="#clocks">Dashboard</a><a href="#explore">Explore map</a><a href="#about">About</a></nav>
+        <div class="header-right"><span class="live-indicator"><span></span> LIVE SYNC</span><button id="themeToggle" class="theme-toggle" type="button" aria-label="Toggle color theme"><i class="fas fa-moon"></i><span>Dark Mode</span></button></div>
+    </header>
+    <main>
+        <section class="hero" aria-labelledby="page-title">
+            <div class="hero-copy"><div class="eyebrow"><span class="pulse"></span> YOUR WINDOW TO THE WORLD</div><h1 id="page-title">Every second,<br><span>everywhere.</span></h1><p>Stay in sync with the world. Track local times across cities, time zones, and everything in between.</p><a class="hero-link" href="#add-clock">Add a location <span>↗</span></a></div>
+            <div class="hero-art" aria-hidden="true"><div class="orbit orbit-one"></div><div class="orbit orbit-two"></div><div class="globe"><div class="globe-grid"></div><i class="fa-solid fa-earth-americas"></i></div><div class="orbit-dot dot-one"></div><div class="orbit-dot dot-two"></div><div class="art-label"><span>●</span> CONNECTED WORLDWIDE</div></div>
+        </section>
+        <section id="clocks" class="dashboard-section" aria-labelledby="clocks-title"><div class="section-heading"><div><div class="eyebrow muted">YOUR DASHBOARD <span class="heading-line"></span> 01</div><h2 id="clocks-title">Around the world <span class="heading-spark">✳</span></h2><p>One world, many time zones. Make every moment count.</p></div><a class="outline-link" href="#add-clock"><i class="fa-solid fa-plus"></i> Add location</a></div><div class="clocks" id="clocksContainer"></div><p id="emptyState" class="empty-state" hidden>No clocks yet. Add a location to get started.</p></section>
+        <section class="add-clock-section" id="add-clock" aria-labelledby="add-title"><div class="add-intro"><div class="add-icon"><i class="fa-solid fa-location-crosshairs"></i></div><div><div class="eyebrow muted">MAKE IT YOURS</div><h2 id="add-title">Add a location</h2><p>Keep the places that matter close.</p></div></div><div class="add-clock-form"><div class="form-group"><label for="timezoneSelect">CITY / TIME ZONE</label><select id="timezoneSelect">
                             <option value="">Choose a location...</option>
                             <optgroup label="North America">
                                 <option value="America/New_York">New York</option>
@@ -73,45 +78,12 @@
                                 <option value="Africa/Johannesburg">Johannesburg</option>
                                 <option value="Africa/Lagos">Lagos</option>
                             </optgroup>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="customName">Custom Label (Optional)</label>
-                        <input type="text" id="customName" placeholder="E.g., Home Office, Client HQ">
-                    </div>
-                    <button id="addClockBtn" class="btn">
-                        <i class="fas fa-plus-circle"></i> Add Clock
-                    </button>
-                </div>
-            </div>
-            
-            <div class="world-map" id="world-map" style="height: 500px; border-radius: 10px;"></div>
-            
-            
-            <footer>
-                <div>
-                    World Clock Dashboard | <span id="version">v2.0</span> | Developed by Nicolette Mashaba
-                </div>
-                <div class="social-links">
-                    <a href="https://twitter.com/m_neyi" target="_blank" title="Twitter">
-                        <i class="fab fa-twitter"></i>
-                    </a>
-                    <a href="https://github.com/NickiMash17" target="_blank" title="GitHub">
-                        <i class="fab fa-github"></i>
-                    </a>
-                    <a href="https://linkedin.com/in/nicolette-mashaba-b094a5221/" target="_blank" title="LinkedIn">
-                        <i class="fab fa-linkedin"></i>
-                    </a>
-                    <a href="https://instagram.com/reney_717" target="_blank" title="Instagram">
-                        <i class="fab fa-instagram"></i>
-                    </a>
-                </div>
-                <div class="current-time">
-                    Local time: <span id="localTime"></span>
-                </div>
-            </footer>
-        </div>
-    </div>
-    <script src="script.js"></script>
+                        </select></div><div class="form-group"><label for="customName">CUSTOM LABEL <span>(OPTIONAL)</span></label><input type="text" id="customName" maxlength="80" placeholder="e.g. Home office"></div><button id="addClockBtn" class="btn" type="button"><i class="fa-solid fa-plus"></i> Add clock</button></div><p id="formMessage" class="form-message" role="status" aria-live="polite"></p></section>
+        <section class="map-section" id="explore" aria-labelledby="map-title"><div class="section-heading"><div><div class="eyebrow muted">A DIFFERENT PERSPECTIVE <span class="heading-line"></span> 02</div><h2 id="map-title">Explore the world <span class="heading-spark">✳</span></h2><p>Your selected locations, mapped out.</p></div><span class="map-caption"><span class="pulse"></span> INTERACTIVE MAP</span></div><div id="world-map" aria-label="Map of selected clock locations"></div><p id="mapFallback" class="map-fallback" hidden>Map unavailable. Your clocks will continue to work.</p></section>
+        <section id="about" class="about"><div><div class="eyebrow muted">TIME, SIMPLIFIED</div><h2>The world is closer<br>than you think.</h2></div><p>From planning a meeting across continents to checking in with loved ones, World Clock helps you compare current local times at a glance. Times automatically reflect daylight saving changes in each location.</p></section>
+    </main>
+    <footer><a class="brand footer-brand" href="/"><span class="brand-icon"><i class="fa-solid fa-globe"></i></span><span>world<span class="brand-accent">clock</span></span></a><p>Made for a world that never stops.</p><div class="current-time"><span class="pulse"></span> YOUR LOCAL TIME <strong id="localTime">--:--:--</strong></div><div class="footer-bottom"><span>© World Clock · A Calculator Flash experience</span><span>TIME IS ON YOUR SIDE <span class="brand-accent">✳</span></span></div></footer>
+</div>
+<noscript>Please enable JavaScript to see live clocks and the interactive map.</noscript>
 </body>
 </html>
