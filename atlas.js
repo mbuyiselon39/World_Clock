@@ -41,7 +41,7 @@ function renderAtlas() {
  const results=document.getElementById('atlasResults'), query=document.getElementById('atlasSearch').value, region=document.getElementById('atlasRegion').value;
  const matches=countryFilter(atlasCountries,query,region), pages=Math.max(1,Math.ceil(matches.length/ATLAS_PAGE_SIZE)); atlasPage=Math.min(atlasPage,pages-1);
  results.replaceChildren(...matches.slice(atlasPage*ATLAS_PAGE_SIZE,(atlasPage+1)*ATLAS_PAGE_SIZE).map(countryCard));
- if(!matches.length) results.append(atlasText('p',atlasCountries.length ? 'No matching countries or territories.' : 'Country data is unavailable. Try refreshing.','search-help'));
+ if(!matches.length) results.append(atlasText('p',atlasCountries.length ? 'No matching countries or territories.' : 'Load countries to browse the directory.','search-help'));
  document.getElementById('atlasPage').textContent=`${matches.length} results · Page ${atlasPage+1} of ${pages}`;
  document.getElementById('atlasPrev').disabled=atlasPage===0; document.getElementById('atlasNext').disabled=atlasPage>=pages-1;
 }
@@ -53,7 +53,7 @@ async function loadAtlas() {
   if(!Array.isArray(data)) throw new Error('Invalid response');
   const seen=new Set(), records=data.map(normalizeCountry).filter(c=>{if(!c||seen.has(c.code))return false;seen.add(c.code);return true;}).sort((a,b)=>a.name.localeCompare(b.name));
   if(!records.length) throw new Error('No country data');
-  atlasCountries=records; atlasPage=0;
+  atlasCountries=records; atlasPage=0; document.getElementById('reloadAtlas').textContent='Refresh countries';
   const filter=document.getElementById('cityCountryFilter'), previous=filter.value; filter.replaceChildren(new Option('All countries',''));
   atlasCountries.forEach(c=>filter.add(new Option(c.name,c.code))); if(atlasCountries.some(c=>c.code===previous)) filter.value=previous;
   status.textContent=`${atlasCountries.length} countries and territories · retrieved ${new Date().toLocaleString()}. Population is a provider estimate; year may vary.`;
@@ -65,5 +65,5 @@ document.addEventListener('DOMContentLoaded',()=>{
  ['atlasSearch','atlasRegion'].forEach(id=>document.getElementById(id).addEventListener(id==='atlasSearch'?'input':'change',()=>{atlasPage=0; renderAtlas();}));
  document.getElementById('atlasPrev').addEventListener('click',()=>{atlasPage=Math.max(0,atlasPage-1); renderAtlas();});
  document.getElementById('atlasNext').addEventListener('click',()=>{atlasPage++; renderAtlas();});
- loadAtlas();
+ renderAtlas();
 });

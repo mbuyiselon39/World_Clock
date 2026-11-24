@@ -94,7 +94,5 @@ document.addEventListener('DOMContentLoaded',()=>{
  document.getElementById('cityCountryFilter').addEventListener('change',()=>{searchGeneration++; searchResults=[]; document.getElementById('cityResults').replaceChildren(new Option('Search to find a location…','')); document.getElementById('citySearchMessage').textContent='Country filter changed. Search again.';});
  document.getElementById('addCityBtn').addEventListener('click',addSearchedCity);
  document.getElementById('refreshSports').addEventListener('click',loadSports);
- const section=document.getElementById('sports');
- if ('IntersectionObserver' in window) { const observer=new IntersectionObserver(entries=>{if(entries.some(e=>e.isIntersecting)){observer.disconnect(); loadSports();}}, {rootMargin:'200px'}); observer.observe(section); }
  setInterval(()=>{if(document.visibilityState==='visible' && sportsRequest) loadSports();}, 6*60*60*1000);
 });
