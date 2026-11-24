@@ -14,10 +14,11 @@ async function searchCities() {
  try {
   const data=await fetchJSON(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=100&language=en&format=json`);
   if(generation!==searchGeneration) return;
-  searchResults=(Array.isArray(data.results)?data.results:[]).map(normalizeCity).filter(Boolean);
+  const countryFilter=document.getElementById('cityCountryFilter').value;
+  searchResults=(Array.isArray(data.results)?data.results:[]).map(normalizeCity).filter(city=>city && (!countryFilter || city.countryCode===countryFilter));
   select.replaceChildren(new Option('Choose a search result…',''));
   searchResults.forEach(city=>select.add(new Option([city.name,city.region,city.country,city.timezone].filter(Boolean).join(' · '),city.id)));
-  status.textContent=searchResults.length ? `${searchResults.length} results. Select a city, then add it. Refine your search if needed.` : 'No supported results found. Try another name or the city/time zone list.';
+  status.textContent=searchResults.length ? `${searchResults.length} results. Select a city, then add it. Refine your search if needed.` : 'No supported results in the first 100 matches. Try a more specific name or remove the country filter.';
  } catch (_) {if(generation===searchGeneration) status.textContent='City search is unavailable. Try again or use the city/time zone list.';}
 }
 function addSearchedCity() {
@@ -90,6 +91,7 @@ document.addEventListener('DOMContentLoaded',()=>{
  document.getElementById('searchCityBtn').addEventListener('click',searchCities);
  document.getElementById('citySearch').addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault(); searchCities();}});
  document.getElementById('citySearch').addEventListener('input',()=>{searchGeneration++; searchResults=[]; document.getElementById('cityResults').replaceChildren(new Option('Search to find a location…','')); document.getElementById('citySearchMessage').textContent='';});
+ document.getElementById('cityCountryFilter').addEventListener('change',()=>{searchGeneration++; searchResults=[]; document.getElementById('cityResults').replaceChildren(new Option('Search to find a location…','')); document.getElementById('citySearchMessage').textContent='Country filter changed. Search again.';});
  document.getElementById('addCityBtn').addEventListener('click',addSearchedCity);
  document.getElementById('refreshSports').addEventListener('click',loadSports);
  const section=document.getElementById('sports');

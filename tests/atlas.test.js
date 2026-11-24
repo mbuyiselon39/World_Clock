@@ -1,0 +1,14 @@
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const vm = require('node:vm');
+const ctx={document:{addEventListener(){}},Intl,URL,console};
+vm.createContext(ctx);vm.runInContext(fs.readFileSync('atlas.js','utf8'),ctx);
+const south=ctx.normalizeCountry({name:{common:'Brazil',official:'Federative Republic of Brazil'},cca2:'BR',region:'Americas',subregion:'South America',capital:['Brasília'],population:200000000,area:8500000,flags:{png:'https://example.com/flag.png'},coatOfArms:{},languages:{por:'Portuguese'}});
+assert.equal(south.region,'South America'); assert.equal(south.crest,''); assert.equal(south.capitals[0],'Brasília');
+assert.equal(ctx.atlasRegionOf({region:'Americas',subregion:'Caribbean'}),'North America');
+assert.equal(ctx.normalizeCountry({name:{common:'Bad'},cca2:'bad'}),null);
+assert.equal(ctx.countryFilter([south],'brasília','South America').length,1);
+assert.equal(ctx.countryFilter([south],'brazil','Europe').length,0);
+assert.equal(ctx.safeImage('javascript:alert(1)'),'');
+assert.equal(ctx.safeImage('http://example.com/flag.png'),'');
+console.log('Atlas adapter tests passed.');
