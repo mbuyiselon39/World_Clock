@@ -105,19 +105,22 @@ async function loadInsights() {
  const airURL=`https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lat}&longitude=${lon}&current=us_aqi&timezone=${encodeURIComponent(zone)}`;
  Promise.allSettled([fetchJSON(weatherURL),fetchJSON(airURL)]).then(([weather,air])=>{
   if (!isCurrent()) return; const out=document.getElementById('weatherResults'); out.replaceChildren();
-  if (weather.status==='fulfilled' && weather.value.current && weather.value.daily) { const w=weather.value, daily=w.daily;
+  if (weather.status==='fulfilled' && weather.value?.current && Array.isArray(weather.value?.daily?.time) && Array.isArray(weather.value?.daily?.temperature_2m_min) && Array.isArray(weather.value?.daily?.temperature_2m_max) && Array.isArray(weather.value?.daily?.weather_code)) { const w=weather.value, daily=w.daily;
    row(out,'Current',`${w.current.temperature_2m}°C · ${w.current.is_day ? 'Day' : 'Night'} · weather code ${w.current.weather_code}`);
    row(out,'Today’s daylight',`Sunrise ${daily.sunrise?.[0]?.slice(11) || 'unavailable'} · Sunset ${daily.sunset?.[0]?.slice(11) || 'unavailable'} local time`);
    daily.time.forEach((day,i)=>row(out,day,`${daily.temperature_2m_min[i]}° to ${daily.temperature_2m_max[i]}°C · weather code ${daily.weather_code[i]}`));
   } else row(out,'Weather','Forecast unavailable.');
-  row(out,'Air quality',air.status==='fulfilled' && air.value.current ? `US AQI ${air.value.current.us_aqi}` : 'Unavailable');
+  row(out,'Air quality',air.status==='fulfilled' && Number.isFinite(air.value?.current?.us_aqi) ? `US AQI ${air.value.current.us_aqi}` : 'Unavailable');
   link(out,'Open-Meteo weather & air quality','https://open-meteo.com/');
   const note=document.createElement('p'); note.textContent='Weather codes follow WMO conventions. Forecasts are estimates; consult local authorities for severe-weather warnings.'; out.append(note);
  });
  Promise.allSettled([fetchJSON(`https://date.nager.at/api/v3/PublicHolidays/${year}/${info[0]}`),fetchJSON(`https://date.nager.at/api/v3/PublicHolidays/${year+1}/${info[0]}`)]).then(results=>{
   if (!isCurrent()) return; const out=document.getElementById('holidayResults'); out.replaceChildren(); const today=`${year}-${String(local.month).padStart(2,'0')}-${String(local.day).padStart(2,'0')}`;
-  const data=results.flatMap(r=>r.status==='fulfilled' && Array.isArray(r.value)?r.value:[]).filter(h=>h.date>=today && h.global).sort((a,b)=>a.date.localeCompare(b.date)).slice(0,5);
-  if (!data.length) row(out,'National holidays','No upcoming national holidays available from this source.'); else data.forEach(h=>{const weekday=new Date(h.date+'T12:00:00Z').getUTCDay(); row(out,h.date,`${h.localName || h.name}${weekday===1 || weekday===5 ? ' · potential long weekend' : ''}`);});
+  const successful=results.filter(r=>r.status==='fulfilled' && Array.isArray(r.value));
+  const data=successful.flatMap(r=>r.value).filter(h=>typeof h.date==='string' && h.date>=today && h.global).sort((a,b)=>a.date.localeCompare(b.date)).slice(0,5);
+  if (!successful.length) row(out,'National holidays','Holiday data is unavailable. Please try again later.');
+  else if (!data.length) row(out,'National holidays','No upcoming national holidays available from this source.'); else data.forEach(h=>{const weekday=new Date(h.date+'T12:00:00Z').getUTCDay(); row(out,h.date,`${h.localName || h.name}${weekday===1 || weekday===5 ? ' · potential long weekend' : ''}`);});
+  if(successful.length===1) row(out,'Coverage','Data for one year could not be loaded; results may be incomplete.');
   link(out,'Nager.Date public holidays','https://date.nager.at/'); const note=document.createElement('p'); note.textContent='National holidays only; regional holidays and school terms are not included. Verify dates locally.'; out.append(note);
  });
  const market=document.getElementById('marketResults'); market.replaceChildren();
@@ -127,12 +130,12 @@ async function loadInsights() {
  async function loadRate() {
   let currency=info[1];
   if (!currency) {
-   try { const country=await fetchJSON(`https://restcountries.com/v3.1/alpha/${encodeURIComponent(info[0])}?fields=currencies`); currency=Object.keys(country.currencies || {})[0]; } catch (_) { /* no currency available */ }
+   try { const snapshot=await fetchJSON('/data/countries.json'); const country=snapshot.countries?.find(c=>c.cca2===info[0]); currency=Object.keys(country?.currencies || {})[0]; } catch (_) { /* no currency available */ }
   }
   if (!isCurrent()) return;
   if (!currency) { row(market,'Exchange rate','Currency unavailable for this location.'); return; }
   if(currency==='USD') { row(market,'Currency','USD · reference currency'); return; }
-  try { const data=await fetchJSON(`https://api.frankfurter.app/latest?from=USD&to=${encodeURIComponent(currency)}`); if(!isCurrent()) return; if(data.rates?.[currency]) row(market,`USD / ${currency}`,`${data.rates[currency]} · ${data.date}`); else row(market,'Exchange rate','Unavailable for this currency.'); }
+  try { const data=await fetchJSON(`https://api.frankfurter.dev/v1/latest?from=USD&to=${encodeURIComponent(currency)}`); if(!isCurrent()) return; if(data.rates?.[currency]) row(market,`USD / ${currency}`,`${data.rates[currency]} · ${data.date}`); else row(market,'Exchange rate','Unavailable for this currency.'); }
   catch (_) { if(isCurrent()) row(market,'Exchange rate','Unavailable for this currency.'); }
  }
  loadRate(); link(market,'Frankfurter exchange rates','https://www.frankfurter.app/');
@@ -145,7 +148,7 @@ async function loadInsights() {
   data.articles.slice(0,5).forEach(article=>{ try { const url=new URL(article.url); if(url.protocol!=='https:' && url.protocol!=='http:') return; link(feed,`${article.title || 'Headline'} · ${article.domain || url.hostname}`,url.href); } catch (_) {} });
   link(feed,'Headlines via GDELT','https://www.gdeltproject.org/');
  }).catch(()=>{if(isCurrent()) row(feed,'Regional headlines','Feed unavailable; use the news search below.');});
- fetchJSON('https://ll.thespacedevs.com/2.2.0/launch/upcoming/?limit=3').then(data=>{
+ fetchJSON('https://ll.thespacedevs.com/2.2.0/launch/upcoming/?limit=3&hide_recent_previous=true').then(data=>{
   if(!isCurrent()) return; if(!Array.isArray(data.results) || !data.results.length) return row(launches,'Upcoming launches','No launch data available.');
   data.results.slice(0,3).forEach(event=>row(launches,event.name || 'Launch', event.net ? `${formatAt(new Date(event.net),zone)} · ${event.status?.name || 'Status unavailable'}` : 'Time to be announced'));
   link(launches,'Launch data: The Space Devs','https://thespacedevs.com/');
@@ -158,11 +161,13 @@ async function loadInsights() {
  const caution=document.createElement('p'); caution.textContent='Check current official local guidance for emergency numbers, visas, weather alerts and entry requirements. US travel advice may not apply to every nationality. In an emergency, contact local services.'; resources.append(caution);
 }
 document.addEventListener('DOMContentLoaded',()=>{
- refreshToolCities(); document.addEventListener('clocksChanged',()=>{ insightRequest++; refreshToolCities(); ['weatherResults','holidayResults','marketResults','resourceResults'].forEach(id=>showText(id,'Load insights for the selected location.')); });
+ refreshToolCities(); document.addEventListener('clocksChanged',()=>{ insightRequest++; refreshToolCities(); showText('meetingResults','Locations changed. Find meeting times again.'); showText('convertResults','Locations changed. Calculate again.'); ['weatherResults','holidayResults','marketResults','resourceResults'].forEach(id=>showText(id,'Load insights for the selected location.')); });
  const now=new Date(), p=zonedParts(now,activeClocks[0]?.timezone || 'UTC');
  const date=`${p.year}-${String(p.month).padStart(2,'0')}-${String(p.day).padStart(2,'0')}`;
  document.getElementById('meetingDate').value=date; document.getElementById('convertDate').value=`${date}T12:00`;
  document.getElementById('daylightToggle').addEventListener('click',toggleDaylight); setInterval(updateDaylightLayer,600000);
+ ['meetingDate','meetingZone'].forEach(id=>document.getElementById(id).addEventListener('change',()=>showText('meetingResults','Settings changed. Find meeting times again.')));
+ ['convertDate','convertFrom','convertTo','flightMinutes'].forEach(id=>document.getElementById(id).addEventListener('change',()=>showText('convertResults','Settings changed. Calculate again.')));
  document.getElementById('findMeetings').addEventListener('click',findMeetings); document.getElementById('convertButton').addEventListener('click',convertTime); document.getElementById('loadInsights').addEventListener('click',loadInsights);
  document.getElementById('insightCity').addEventListener('change',()=>{insightRequest++; ['weatherResults','holidayResults','marketResults','resourceResults'].forEach(id=>showText(id,'Load insights for the selected location.'));});
 });
